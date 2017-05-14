@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.flume.dome</groupId>
-  <artifactId>mysink</artifactId>
+  <artifactId>flume_mysql</artifactId>
   <version>0.0.1</version>
 <!--   <packaging>jar</packaging> -->
-  <name>mysink</name>
+  <name>flume_mysql</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
