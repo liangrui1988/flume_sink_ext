@@ -1,11 +1,11 @@
 
 mvn clean 
 mvn install
-½«´úÂë´ò³Éjar°üºó£¬ÉÏ´«µ½flume°²×°Ä¿Â¼ÏÂµÄlibÎÄ¼ş¼ĞÖĞ£¬Í¬Ê±ĞèÒªÉÏ´«MySQLµÄÇı¶¯jar°ü
+å°†ä»£ç æ‰“æˆjaråŒ…åï¼Œä¸Šä¼ åˆ°flumeå®‰è£…ç›®å½•ä¸‹çš„libæ–‡ä»¶å¤¹ä¸­ï¼ŒåŒæ—¶éœ€è¦ä¸Šä¼ MySQLçš„é©±åŠ¨jaråŒ…
 
--------------²âÊÔ Spooling Directory Source--------------------------
-conf£ºmysql_sink.conf
-
+-------------æµ‹è¯• Spooling Directory Source--------------------------
+confï¼šmysql_sink.conf
+<code>
 # Name the components on this agent
 a1.sources = r1
 a1.sinks = k1
@@ -31,14 +31,14 @@ a1.sinks.k1.channel = c1
 a1.channels.c1.type = memory
 a1.channels.c1.capacity = 1000
 a1.channels.c1.transactionCapacity = 100
+</code>
 
 
-
-Æô¶¯flume agent al
+å¯åŠ¨flume agent al
 bin/flume-ng agent --conf conf --conf-file conf/mysql_sink.conf --name a1 -Dflume.root.logger=INFO,console
 
 
-´´¼ä±í£º
+åˆ›é—´è¡¨ï¼š
 CREATE TABLE `log_data` (
 `id`  int(11) NOT NULL AUTO_INCREMENT ,
 `context`  varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL ,
@@ -52,9 +52,9 @@ ROW_FORMAT=COMPACT
 ;
 
 
-²âÊÔ:
+æµ‹è¯•:
 cd /home/rui/log/flumespool
 echo "hello world" > test.log
 
-Êı¾İĞ´Èë³É¹¦!
+æ•°æ®å†™å…¥æˆåŠŸ!
 
