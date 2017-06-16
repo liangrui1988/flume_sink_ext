@@ -29,6 +29,7 @@ a1.sinks.k1.databaseName = game_log
 a1.sinks.k1.tableName = zl_log
 a1.sinks.k1.user = game
 a1.sinks.k1.password = game123
+a1.sinks.k1.serverId = 4
 a1.sinks.k1.channel = c1
 
 # Use a channel which buffers events in memory
@@ -39,7 +40,10 @@ a1.channels.c1.transactionCapacity = 100
 
 
 启动flume agent al
-bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink.conf --name a1 -Dflume.root.logger=INFO,console
+bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=INFO,console
+
+
+nohup bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=INFO,console &
 
 
 创间表：

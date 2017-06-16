@@ -33,6 +33,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	private String password;
 	private PreparedStatement preparedStatement;
 	private Connection conn;
+	private Integer serverId;
 	private int batchSize;// 批处理数量
 
 	public DBsqlSink() {
@@ -71,7 +72,11 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					Log.info("log inserint json:{}", json.toString());
 					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
 					// preparedStatement.setString(1, temp);
-					preparedStatement.setInt(1, 1);
+					if (serverId == null) {
+						preparedStatement.setInt(1, -2);
+					} else {
+						preparedStatement.setInt(1, Integer.valueOf(serverId));
+					}
 					preparedStatement.setString(2, json.toString());
 					preparedStatement.setString(3, json.getString("time"));
 					preparedStatement.setString(4, json.getString("file"));
@@ -98,8 +103,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	public void configure(Context context) {
 		hostname = context.getString("hostname");
 		Preconditions.checkNotNull(hostname, "hostname must be set!!");
-//		port = context.getString("port");
-//		Preconditions.checkNotNull(port, "port must be set!!");
+		// port = context.getString("port");
+		// Preconditions.checkNotNull(port, "port must be set!!");
 		databaseName = context.getString("databaseName");
 		Preconditions.checkNotNull(databaseName, "databaseName must be set!!");
 		tableName = context.getString("tableName");
@@ -109,6 +114,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 		password = context.getString("password");
 		Preconditions.checkNotNull(password, "password must be set!!");
 		batchSize = context.getInteger("batchSize", 100);
+		serverId = context.getInteger("serverId");
+
 		Preconditions.checkNotNull(batchSize > 0, "batchSize must be a positive number!!");
 
 	}
