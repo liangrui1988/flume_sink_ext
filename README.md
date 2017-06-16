@@ -1,10 +1,10 @@
 
 mvn clean 
 mvn install
-将代码打成jar包后，上传到flume安装目录下的lib文件夹中，同时需要上传MySQL的驱动jar包
+将代码打成jar包后，上传到flume安装目录下的lib文件夹中，同时需要上传SQL的驱动jar包
 
 -------------测试 Spooling Directory Source--------------------------
-conf：mysql_sink.conf
+conf：dbsql_sink.conf
 <code>
 # Name the components on this agent
 a1.sources = r1
@@ -12,19 +12,23 @@ a1.sinks = k1
 a1.channels = c1
 
 # Describe/configure the source
-a1.sources.r1.type = spooldir
-a1.sources.r1.spoolDir = /home/rui/log/flumespool
-a1.sources.r1.fileHeader = true
+#a1.sources.r1.type = spooldir
+#a1.sources.r1.spoolDir = /home/rui/log/flumespool
+#a1.sources.r1.fileHeader = true
+
+a1.sources.r1.type = exec
+a1.sources.r1.command = tail -F /home/zl/xsvr/server/xgame_4/logs/act/zl_war.log
+#a1.sources.tailsource-1.command = for i in /path/*.log; do cat $i; done
 a1.sources.r1.channels = c1
 
 # Describe the sink
-a1.sinks.k1.type = com.flume.dome.mysink.MysqlSink
-a1.sinks.k1.hostname = 192.168.254.1
-a1.sinks.k1.port = 3306
+a1.sinks.k1.type = com.flume.dome.mysink.DBsqlSink
+a1.sinks.k1.hostname = 192.168.12.26
+a1.sinks.k1.port = 5432
 a1.sinks.k1.databaseName = flume_db
-a1.sinks.k1.tableName = log_data
-a1.sinks.k1.user = liang
-a1.sinks.k1.password = 123456
+a1.sinks.k1.tableName = game_log
+a1.sinks.k1.user = zl_log
+a1.sinks.k1.password = game123
 a1.sinks.k1.channel = c1
 
 # Use a channel which buffers events in memory
