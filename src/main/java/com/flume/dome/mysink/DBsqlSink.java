@@ -54,9 +54,9 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				event = channel.take();// 从通道中获取数据
 				if (event != null) {
 					content = new String(event.getBody());
-					//把文本返换行分隔，并转json
-					actions=ConverData.conver(content);
-//					actions.add(content);
+					// 把文本返换行分隔，并转json
+					actions = ConverData.conver(content);
+					// actions.add(content);
 				} else {
 					result = Status.BACKOFF;
 					break;
@@ -65,11 +65,13 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			if (actions.size() > 0) {
 				preparedStatement.clearBatch();
 				for (JSONObject json : actions) {
-//					String sql = "INSERT INTO " + tableName +" (server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?)";
+					// String sql = "INSERT INTO " + tableName +"
+					// (server_id,cont,time,file) VALUES (?,cast(? AS
+					// json),cast(? AS timestamp),?)";
 					Log.info("log inserint json:{}", json.toString());
 					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
-//					preparedStatement.setString(1, temp);
-					preparedStatement.setInt(1,1);
+					// preparedStatement.setString(1, temp);
+					preparedStatement.setInt(1, 1);
 					preparedStatement.setString(2, json.toString());
 					preparedStatement.setString(3, json.getString("time"));
 					preparedStatement.setString(4, json.getString("file"));
@@ -83,11 +85,9 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			try {
 				transaction.rollback();
 			} catch (Exception e2) {
-				LOG.error("Exception in rollback. Rollback might not have been"
-						+ "successful.", e2);
+				LOG.error("Exception in rollback. Rollback might not have been" + "successful.", e2);
 			}
-			LOG.error("Failed to commit transaction."
-					+ "Transaction rolled back.", e);
+			LOG.error("Failed to commit transaction." + "Transaction rolled back.", e);
 			Throwables.propagate(e);
 		} finally {
 			transaction.close();
@@ -98,8 +98,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	public void configure(Context context) {
 		hostname = context.getString("hostname");
 		Preconditions.checkNotNull(hostname, "hostname must be set!!");
-		port = context.getString("port");
-		Preconditions.checkNotNull(port, "port must be set!!");
+//		port = context.getString("port");
+//		Preconditions.checkNotNull(port, "port must be set!!");
 		databaseName = context.getString("databaseName");
 		Preconditions.checkNotNull(databaseName, "databaseName must be set!!");
 		tableName = context.getString("tableName");
@@ -109,8 +109,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 		password = context.getString("password");
 		Preconditions.checkNotNull(password, "password must be set!!");
 		batchSize = context.getInteger("batchSize", 100);
-		Preconditions.checkNotNull(batchSize > 0,
-				"batchSize must be a positive number!!");
+		Preconditions.checkNotNull(batchSize > 0, "batchSize must be a positive number!!");
 
 	}
 
@@ -118,21 +117,24 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	public synchronized void start() {
 		super.start();
 		try {
-			// 调用Class.forName()方法加载驱动程序
-			Class.forName("com.mysql.jdbc.Driver");
+			// 调用Class.forName()方法加载驱动程序org.postgresql
+			Class.forName("org.postgresql.Driver");
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		String url = "jdbc:mysql://" + hostname + ":" + port + "/"
-				+ databaseName;
+		// String url = "jdbc:mysql://" + hostname + ":" + port + "/"
+		// + databaseName;
+		String url = hostname + "/" + databaseName;
 		Log.info("mysql start url:{}", url);
 		// 调用DriverManager对象的getConnection()方法，获得一个Connection对象
 		try {
 			conn = DriverManager.getConnection(url, user, password);
 			conn.setAutoCommit(false);
 			// 创建一个Statement对象
-//			String sql="insert into "+ tableName + " (context,time) values (?,?)";
-			String sql = "INSERT INTO " + tableName +" (server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?)";
+			// String sql="insert into "+ tableName + " (context,time) values
+			// (?,?)";
+			String sql = "INSERT INTO " + tableName
+					+ " (server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?)";
 			preparedStatement = conn.prepareStatement(sql);
 		} catch (SQLException e) {
 			e.printStackTrace();

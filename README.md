@@ -23,11 +23,11 @@ a1.sources.r1.channels = c1
 
 # Describe the sink
 a1.sinks.k1.type = com.flume.dome.mysink.DBsqlSink
-a1.sinks.k1.hostname = 192.168.12.26
-a1.sinks.k1.port = 5432
-a1.sinks.k1.databaseName = flume_db
-a1.sinks.k1.tableName = game_log
-a1.sinks.k1.user = zl_log
+a1.sinks.k1.hostname = jdbc:postgresql://192.168.12.26:5432
+#a1.sinks.k1.port = 5432
+a1.sinks.k1.databaseName = game_log
+a1.sinks.k1.tableName = zl_log
+a1.sinks.k1.user = game
 a1.sinks.k1.password = game123
 a1.sinks.k1.channel = c1
 
@@ -39,7 +39,7 @@ a1.channels.c1.transactionCapacity = 100
 
 
 启动flume agent al
-bin/flume-ng agent --conf conf --conf-file conf/mysql_sink.conf --name a1 -Dflume.root.logger=INFO,console
+bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink.conf --name a1 -Dflume.root.logger=INFO,console
 
 
 创间表：

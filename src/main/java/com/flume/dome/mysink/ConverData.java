@@ -44,6 +44,13 @@ public class ConverData {
 				}
 				jsons.put(kvs[0].trim(), kvs[1].trim());
 			}
+			// 时间去掉毫秒
+			if (jsons.containsKey("time")) {
+				String t = jsons.get("time").toString();
+				String tdata = t.substring(0, t.lastIndexOf(":"));
+				jsons.put("time", tdata);
+			}
+
 			list.add(jsons);
 		}
 		return list;
