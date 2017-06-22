@@ -35,6 +35,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	private Connection conn;
 	private Integer serverId;
 	private int batchSize;// 批处理数量
+	private String josnTo="true";// 是否转换json
 
 	public DBsqlSink() {
 		LOG.info("MysqlSink start...");
@@ -55,9 +56,13 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				event = channel.take();// 从通道中获取数据
 				if (event != null) {
 					content = new String(event.getBody());
-					// 把文本返换行分隔，并转json
-					actions = ConverData.conver(content);
-					// actions.add(content);
+					if (josnTo != null && "true".equals(josnTo)) {
+						// 把文本返换行分隔，并转json
+						actions = ConverData.conver(content);
+					} else {
+						// 字符串转json
+						actions = ConverData.conver(content);
+					}
 				} else {
 					result = Status.BACKOFF;
 					break;
@@ -66,12 +71,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			if (actions.size() > 0) {
 				preparedStatement.clearBatch();
 				for (JSONObject json : actions) {
-					// String sql = "INSERT INTO " + tableName +"
-					// (server_id,cont,time,file) VALUES (?,cast(? AS
-					// json),cast(? AS timestamp),?)";
 					Log.info("log inserint json:{}", json.toString());
 					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
-					// preparedStatement.setString(1, temp);
 					if (serverId == null) {
 						preparedStatement.setInt(1, -2);
 					} else {
@@ -115,6 +116,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 		Preconditions.checkNotNull(password, "password must be set!!");
 		batchSize = context.getInteger("batchSize", 100);
 		serverId = context.getInteger("serverId");
+		josnTo = context.getString("josnTo");
 
 		Preconditions.checkNotNull(batchSize > 0, "batchSize must be a positive number!!");
 

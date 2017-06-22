@@ -31,6 +31,9 @@ a1.sinks.k1.user = game
 a1.sinks.k1.password = game123
 a1.sinks.k1.serverId = 4
 a1.sinks.k1.channel = c1
+a1.sinks.k1.josnTo = true   #是否进行json转换  k=v行式文本 转json
+
+
 
 # Use a channel which buffers events in memory
 a1.channels.c1.type = memory
