@@ -6,7 +6,7 @@
 
   <groupId>com.flume.dome</groupId>
   <artifactId>flume_dbsql</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 <!--   <packaging>jar</packaging> -->
   <name>flume_dbsql</name>
   <url>http://maven.apache.org</url>
