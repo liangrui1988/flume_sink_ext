@@ -84,7 +84,13 @@ public class ConverData {
 			if (content == null || "".equals(content)) {
 				continue;
 			}
-			jsons = (JSONObject) JSON.parse(content);
+			try {
+				jsons = (JSONObject) JSON.parse(content);
+			} catch (Exception e) {
+				LOG.error("解析json 错误:{}",content);
+				e.printStackTrace();
+				continue;
+			}
 
 			// 时间去掉毫秒
 			if (jsons.containsKey("time")) {

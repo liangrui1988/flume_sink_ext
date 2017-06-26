@@ -23,7 +23,7 @@ a1.sources.r1.channels = c1
 
 # Describe the sink
 a1.sinks.k1.type = com.flume.dome.mysink.DBsqlSink
-a1.sinks.k1.hostname = jdbc:postgresql://192.168.12.26:5432
+a1.sinks.k1.hostname = jdbc:postgresql://192.168.20.243:5432
 #a1.sinks.k1.port = 5432
 a1.sinks.k1.databaseName = game_log
 a1.sinks.k1.tableName = zl_log

@@ -35,7 +35,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	private Connection conn;
 	private Integer serverId;
 	private int batchSize;// 批处理数量
-	private String josnTo="true";// 是否转换json
+	private String josnTo = "true";// 是否转换json
 
 	public DBsqlSink() {
 		LOG.info("MysqlSink start...");
@@ -56,12 +56,16 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				event = channel.take();// 从通道中获取数据
 				if (event != null) {
 					content = new String(event.getBody());
+					Log.info("josnTo {},src content:{}", josnTo, content);
 					if (josnTo != null && "true".equals(josnTo)) {
-						// 把文本返换行分隔，并转json
-						actions = ConverData.conver(content);
+						// 把文本按行分隔，把kv转json
+						List<JSONObject> action = ConverData.conver(content);
+						actions.addAll(action);
 					} else {
 						// 字符串转json
-						actions = ConverData.conver(content);
+						List<JSONObject> action = ConverData.converStr(content);
+						actions.addAll(action);
+
 					}
 				} else {
 					result = Status.BACKOFF;
