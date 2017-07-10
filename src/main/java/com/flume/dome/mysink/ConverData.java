@@ -58,15 +58,24 @@ public class ConverData {
 				}
 				// 过滤条件
 				if ("temp_targetor".equals(kvs[0].trim())) {// buffs
-					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
-						continue;
-					}
+//					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
+//						continue;
+//					}
+					continue;
 				}
 				if ("temp_attacker".equals(kvs[0].trim())) {// buffs
-					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
-						continue;
-					}
+//					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
+//					
+//					}
+					continue;
 				}
+				if ("attack_temp_eff".equals(kvs[0].trim())) {
+					continue;
+				}
+				if ("target_temp_eff".equals(kvs[0].trim())) {
+					continue;
+				}	
+				
 				jsons.put(kvs[0].trim(), kvs[1].trim());
 			}
 

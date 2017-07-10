@@ -76,12 +76,14 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					break;
 				}
 			}
+			
+			String com_way="0";
+			
 			if (actions.size() > 0) {
 				preparedStatement.clearBatch();
 				preparedStatement2.clearBatch();
 				for (JSONObject json : actions) {
 					Log.info("log inserint json:{}", json.toString());
-					
 					//如果是属性，则插入另一张表
 					if("attrs".equals(json.getString("file"))){
 //						StringBuffer sb=new StringBuffer();
@@ -99,11 +101,11 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 						preparedStatement2.setString(2, json.toString());
 						preparedStatement2.setString(3, json.getString("time"));
 						preparedStatement2.setString(4, json.getString("file"));
-						preparedStatement2.setString(5, json.getString("time_log"));
-						preparedStatement2.setString(6, json.getString("uuid"));
-
+						preparedStatement2.setLong(5, json.getLongValue("time_log"));
+						preparedStatement2.setLong(6, json.getLongValue("uuid"));
 						preparedStatement2.addBatch();
-					
+						com_way="2";
+
 					}else{
 //						StringBuffer sb=new StringBuffer();
 //						sb.append("INSERT INTO ");
@@ -120,15 +122,20 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 						preparedStatement.setString(2, json.toString());
 						preparedStatement.setString(3, json.getString("time"));
 						preparedStatement.setString(4, json.getString("file"));
-						preparedStatement2.setString(5, json.getString("time_log"));
-						preparedStatement2.setString(6, json.getString("uuid"));
+						preparedStatement.setLong(5, json.getLongValue("time_log"));
+						preparedStatement.setLong(6, json.getLongValue("uuid"));
 						preparedStatement.addBatch();
-					}
-					
-				}
-				preparedStatement.executeBatch();
-				preparedStatement2.executeBatch();
+						com_way="1";
 
+					}
+				}
+				//提交那个sql
+//				if("1".equals(com_way)){
+					preparedStatement.executeBatch();
+//				}
+//				if("2".equals(com_way)){
+					preparedStatement2.executeBatch();
+//				}
 				conn.commit();
 			}
 			transaction.commit();

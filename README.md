@@ -48,6 +48,9 @@ bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dfl
 
 nohup bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=INFO,console &
 
+nohup ../bin/flume-ng agent --conf ../conf --conf-file ../conf/x1_dir_to_db_flume.conf  --name a1 -Dflume.root.logger=INFO,console > x1nohup.out 2>&1 &
+
+
 
 创间表：
 CREATE TABLE `log_data` (
