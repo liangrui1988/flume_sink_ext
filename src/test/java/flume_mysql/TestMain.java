@@ -21,6 +21,7 @@ public class TestMain {
 		c.put("user", "game");
 		c.put("password", "game123");
 		c.put("serverId", "1");
+		c.put("tableName", "zl_log_info");
 
 		sink.configure(c);
 		sink.start();

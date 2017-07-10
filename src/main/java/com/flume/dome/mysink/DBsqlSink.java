@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import org.apache.flume.Channel;
@@ -22,6 +23,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
+
 public class DBsqlSink extends AbstractSink implements Configurable {
 
 	private Logger LOG = LoggerFactory.getLogger(DBsqlSink.class);
@@ -32,6 +34,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	private String user;
 	private String password;
 	private PreparedStatement preparedStatement;
+	private PreparedStatement preparedStatement2;
+	private Statement statement;
 	private Connection conn;
 	private Integer serverId;
 	private int batchSize;// 批处理数量
@@ -56,7 +60,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				event = channel.take();// 从通道中获取数据
 				if (event != null) {
 					content = new String(event.getBody());
-					Log.info("josnTo {},src content:{}", josnTo, content);
+//					Log.info("josnTo {},src content:{}", josnTo, content);
 					if (josnTo != null && "true".equals(josnTo)) {
 						// 把文本按行分隔，把kv转json
 						List<JSONObject> action = ConverData.conver(content);
@@ -74,20 +78,57 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			}
 			if (actions.size() > 0) {
 				preparedStatement.clearBatch();
+				preparedStatement2.clearBatch();
 				for (JSONObject json : actions) {
 					Log.info("log inserint json:{}", json.toString());
-					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
-					if (serverId == null) {
-						preparedStatement.setInt(1, -2);
-					} else {
-						preparedStatement.setInt(1, Integer.valueOf(serverId));
+					
+					//如果是属性，则插入另一张表
+					if("attrs".equals(json.getString("file"))){
+//						StringBuffer sb=new StringBuffer();
+//						sb.append("INSERT INTO ");
+//						sb.append(tableName);
+//						sb.append("_attrs(server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?) ");
+//						Log.info("log _attrs inserint sql:{}", sb.toString());
+						
+						// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
+						if (serverId == null) {
+							preparedStatement2.setInt(1, -2);
+						} else {
+							preparedStatement2.setInt(1, Integer.valueOf(serverId));
+						}
+						preparedStatement2.setString(2, json.toString());
+						preparedStatement2.setString(3, json.getString("time"));
+						preparedStatement2.setString(4, json.getString("file"));
+						preparedStatement2.setString(5, json.getString("time_log"));
+						preparedStatement2.setString(6, json.getString("uuid"));
+
+						preparedStatement2.addBatch();
+					
+					}else{
+//						StringBuffer sb=new StringBuffer();
+//						sb.append("INSERT INTO ");
+//						sb.append(tableName);
+//						sb.append("(server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?) ");
+//						preparedStatement.addBatch(sb.toString());
+						
+						// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
+						if (serverId == null) {
+							preparedStatement.setInt(1, -2);
+						} else {
+							preparedStatement.setInt(1, Integer.valueOf(serverId));
+						}
+						preparedStatement.setString(2, json.toString());
+						preparedStatement.setString(3, json.getString("time"));
+						preparedStatement.setString(4, json.getString("file"));
+						preparedStatement2.setString(5, json.getString("time_log"));
+						preparedStatement2.setString(6, json.getString("uuid"));
+						preparedStatement.addBatch();
 					}
-					preparedStatement.setString(2, json.toString());
-					preparedStatement.setString(3, json.getString("time"));
-					preparedStatement.setString(4, json.getString("file"));
-					preparedStatement.addBatch();
+					
 				}
 				preparedStatement.executeBatch();
+				preparedStatement2.executeBatch();
+
 				conn.commit();
 			}
 			transaction.commit();
@@ -147,8 +188,12 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			// String sql="insert into "+ tableName + " (context,time) values
 			// (?,?)";
 			String sql = "INSERT INTO " + tableName
-					+ " (server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?)";
+					+ " (server_id,cont,time,file,time_log,uuid) VALUES (?,cast(? AS json),cast(? AS timestamp),?,?,?)";
 			preparedStatement = conn.prepareStatement(sql);
+
+			String sql2 = "INSERT INTO " + tableName
+					+ "_attrs (server_id,cont,time,file,time_log,uuid) VALUES (?,cast(? AS json),cast(? AS timestamp),?,?,?)";
+			preparedStatement2 = conn.prepareStatement(sql2);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);

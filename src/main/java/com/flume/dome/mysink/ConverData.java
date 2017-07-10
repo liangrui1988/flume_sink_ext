@@ -1,10 +1,14 @@
 package com.flume.dome.mysink;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +33,9 @@ public class ConverData {
 	 * 
 	 * @param context
 	 * @return
+	 * @throws ParseException
 	 */
-	public static List<JSONObject> conver(String context) {
+	public static List<JSONObject> conver(String context) throws ParseException {
 		List<JSONObject> list = new LinkedList<JSONObject>();
 		// 拆分一行
 		String[] contents = context.split("\n");
@@ -51,14 +56,35 @@ public class ConverData {
 				if (kvs == null || kvs.length != 2) {
 					continue;
 				}
+				// 过滤条件
+				if ("temp_targetor".equals(kvs[0].trim())) {// buffs
+					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
+						continue;
+					}
+				}
+				if ("temp_attacker".equals(kvs[0].trim())) {// buffs
+					if (StringUtils.isBlank(kvs[1].trim()) || "[]".equals(kvs[1].trim())) {
+						continue;
+					}
+				}
 				jsons.put(kvs[0].trim(), kvs[1].trim());
 			}
-			// 时间去掉毫秒
+
 			if (jsons.containsKey("time")) {
+
+				// 存储有毫秒时间戳
 				String t = jsons.get("time").toString();
+				// 2017-07-10 12:03:47:307
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+				long dt = df.parse(t).getTime();
+				jsons.put("time_log", dt);
+				// 时间去掉毫秒
 				if (getStrToCount(t, ":") == 3) {// 如果时间带有毫秒，则去掉
 					String tdata = t.substring(0, t.lastIndexOf(":"));
 					jsons.put("time", tdata);
+				}else{
+					jsons.put("time", t);
+
 				}
 			}
 
@@ -87,11 +113,10 @@ public class ConverData {
 			try {
 				jsons = (JSONObject) JSON.parse(content);
 			} catch (Exception e) {
-				LOG.error("解析json 错误:{}",content);
+				LOG.error("解析json 错误:{}", content);
 				e.printStackTrace();
 				continue;
 			}
-
 			// 时间去掉毫秒
 			if (jsons.containsKey("time")) {
 				String t = jsons.get("time").toString();
@@ -99,6 +124,10 @@ public class ConverData {
 					String tdata = t.substring(0, t.lastIndexOf(":"));
 					jsons.put("time", tdata);
 				}
+			}
+			//把uuid转出来，作为索引
+			if (jsons.containsKey("uuid")) {
+				
 			}
 
 			list.add(jsons);
@@ -116,7 +145,7 @@ public class ConverData {
 		return i;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
 
 		int i = getStrToCount("2017-06-16 15:23:07:383", ":");
 		System.out.println(i);
