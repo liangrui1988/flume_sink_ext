@@ -1,2 +1,3 @@
-com\flume\dome\mysink\ConverData.class
+com\flume\dome\conver\ConverData.class
 com\flume\dome\mysink\DBsqlSink.class
+com\flume\dome\elastic\sink\ExtendsEsSink.class
