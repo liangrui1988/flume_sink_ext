@@ -65,9 +65,9 @@ import com.google.common.collect.Lists;
  * @date 2017/7/21
  *
  */
-public class ExtendsEsSink extends AbstractSink implements Configurable {
+public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 
-	private static final Logger logger = LoggerFactory.getLogger(ExtendsEsSink.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExtendsEsRestSink.class);
 
 	// Used for testing
 	private boolean isLocal = false;
@@ -99,7 +99,7 @@ public class ExtendsEsSink extends AbstractSink implements Configurable {
 	 * Create an {@link ElasticSearchSink} configured using the supplied
 	 * configuration
 	 */
-	public ExtendsEsSink() {
+	public ExtendsEsRestSink() {
 		this(false);
 	}
 
@@ -114,7 +114,7 @@ public class ExtendsEsSink extends AbstractSink implements Configurable {
 	 * 
 	 */
 	@VisibleForTesting
-	ExtendsEsSink(boolean isLocal) {
+	ExtendsEsRestSink(boolean isLocal) {
 		this.isLocal = isLocal;
 	}
 
@@ -355,13 +355,18 @@ public class ExtendsEsSink extends AbstractSink implements Configurable {
 		logger.info("ElasticSearch sink {} started");
 		sinkCounter.start();
 		try {
-			if (isLocal) {
-				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
-			} else {
-				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
-						indexRequestFactory);
-				client.configure(elasticSearchClientContext);
-			}
+//			if (isLocal) {
+//				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
+//			} else {
+//				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
+//						indexRequestFactory);
+//				client.configure(elasticSearchClientContext);
+//			}
+		   client=  new EsRestSink(new String[]{},eventSerializer);
+
+//			client=EsUtil.getRestClint();
+			
+			
 			sinkCounter.incrementConnectionCreatedCount();
 		} catch (Exception ex) {
 			ex.printStackTrace();

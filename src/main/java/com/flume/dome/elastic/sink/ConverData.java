@@ -1,4 +1,4 @@
-package com.flume.dome.conver;
+package com.flume.dome.elastic.sink;
 
 import java.text.DateFormat;
 import java.text.ParseException;

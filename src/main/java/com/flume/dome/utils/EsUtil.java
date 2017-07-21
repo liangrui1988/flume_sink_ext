@@ -1,4 +1,4 @@
-package com.flume.dome.conver;
+package com.flume.dome.utils;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;

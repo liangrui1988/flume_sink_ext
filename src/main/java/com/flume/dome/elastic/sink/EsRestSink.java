@@ -1,8 +1,10 @@
 package com.flume.dome.elastic.sink;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.flume.Context;
@@ -13,18 +15,27 @@ import org.apache.flume.sink.elasticsearch.IndexNameBuilder;
 import org.apache.flume.sink.elasticsearch.client.ElasticSearchClient;
 import org.apache.flume.sink.elasticsearch.client.ElasticSearchRestClient;
 import org.apache.flume.sink.elasticsearch.client.RoundRobinList;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.flume.dome.conver.EsUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 
@@ -53,12 +64,30 @@ public class EsRestSink implements ElasticSearchClient {
 	private final RoundRobinList<String> serversList;
 
 	private StringBuilder bulkBuilder;
-//	private HttpClient httpClient;
-//	private CloseableHttpClient httpClient;
-	
-	
+	 private HttpClient httpClient;
+	// private CloseableHttpClient httpClient;
+
+	public static final String httpHost = "192.168.20.243";
+	public static final Integer port = 9200;
+	public static final String username = "elastic";
+	public static final String password = "123456";
 	final static CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
+	/**
+	 * 获取客户端
+	 * 
+	 * @return
+	 */
+	public static RestClient getRestClint() {
+		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+		RestClient restClient = RestClient.builder(new HttpHost(httpHost, port))
+				.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+					public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+					}
+				}).build();
+		return restClient;
+	}
 
 	public EsRestSink(String[] hostNames, ElasticSearchEventSerializer serializer) {
 
@@ -70,32 +99,33 @@ public class EsRestSink implements ElasticSearchClient {
 		this.serializer = serializer;
 
 		serversList = new RoundRobinList<String>(Arrays.asList(hostNames));
-//		httpClient = new DefaultHttpClient();
+		 httpClient = new DefaultHttpClient();
 		bulkBuilder = new StringBuilder();
 	}
-	
-	
+
 	/**
 	 * 获取客户端
 	 * 
 	 * @return
 	 */
-//	public static RestClient getRestClint() {
-//		RestClient restClient = RestClient.builder(new HttpHost(httpHost, port))
-//				.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-//					@Override
-//					public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-//						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-//					}
-//				}).build();
-//		return restClient;
-//	}
-	
+	// public static RestClient getRestClint() {
+	// RestClient restClient = RestClient.builder(new HttpHost(httpHost, port))
+	// .setHttpClientConfigCallback(new
+	// RestClientBuilder.HttpClientConfigCallback() {
+	// @Override
+	// public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder
+	// httpClientBuilder) {
+	// return
+	// httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+	// }
+	// }).build();
+	// return restClient;
+	// }
 
 	@VisibleForTesting
 	public EsRestSink(String[] hostNames, ElasticSearchEventSerializer serializer, HttpClient client) {
 		this(hostNames, serializer);
-//		httpClient = client;
+		// httpClient = client;
 	}
 
 	public void configure(Context context) {
@@ -127,38 +157,43 @@ public class EsRestSink implements ElasticSearchClient {
 
 	public void execute() throws Exception {
 		int statusCode = 0, triesCount = 0;
-//		HttpResponse response = null;
-		org.elasticsearch.client.Response  response=null;
+		// HttpResponse response = null;
+		org.elasticsearch.client.Response response = null;
 		String entity;
 		synchronized (bulkBuilder) {
 			entity = bulkBuilder.toString();
 			bulkBuilder = new StringBuilder();
 		}
-		while (statusCode != HttpStatus.SC_OK && triesCount < serversList.size()) {
-			triesCount++;
-			String host = serversList.get();
-			String url = host + "/" + BULK_ENDPOINT;
-			HttpPost httpRequest = new HttpPost(url);
-			httpRequest.setEntity(new StringEntity(entity));
-			logger.info("打印出 host: " + host);
-			response = EsUtil.getRestClint().performRequest("POST", "/game_log/zl_log_info/_bulk",
+
+//		logger.info("打印出 statusCode: " + statusCode);
+//		logger.info("打印出 serversList.size(): " + serversList.size());
+
+//		while (statusCode != HttpStatus.SC_OK && triesCount < serversList.size()) {
+//			triesCount++;
+//			String host = serversList.get();
+//			String url = host + "/" + BULK_ENDPOINT;
+//			HttpPost httpRequest = new HttpPost(url);
+//			httpRequest.setEntity(new StringEntity(entity));
+//			logger.info("打印出 host: " + host);
+			response = getRestClint().performRequest("POST", "/game_log/zl_log_info/_bulk",
 					Collections.singletonMap("pretty", "true"), new StringEntity(entity));
-//			response = httpClient.execute(httpRequest);
+			// response = httpClient.execute(httpRequest);
 			statusCode = response.getStatusLine().getStatusCode();
 			logger.info("Status code from elasticsearch: " + statusCode);
 			if (response.getEntity() != null) {
-				logger.debug(
+				logger.info(
 						"Status message from elasticsearch: " + EntityUtils.toString(response.getEntity(), "UTF-8"));
 			}
-		}
+//		}
 
-		if (statusCode != HttpStatus.SC_OK) {
-			if (response.getEntity() != null) {
-				throw new EventDeliveryException(EntityUtils.toString(response.getEntity(), "UTF-8"));
-			} else {
-				throw new EventDeliveryException("Elasticsearch status code was: " + statusCode);
-			}
+		//			if (statusCode != HttpStatus.SC_OK) {
+		if (response.getEntity() != null) {
+			throw new EventDeliveryException(EntityUtils.toString(response.getEntity(), "UTF-8"));
+		} else {
+			throw new EventDeliveryException("Elasticsearch status code was: " + statusCode);
 		}
+//			}
+
 	}
 
 }

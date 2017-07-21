@@ -1,5 +1,6 @@
-E:\pro\github\flume_mysql\src\main\java\com\flume\dome\conver\EsUtil.java
+E:\pro\github\flume_mysql\src\main\java\com\flume\dome\elastic\sink\ConverData.java
 E:\pro\github\flume_mysql\src\main\java\com\flume\dome\elastic\sink\ExtendsEsSink.java
 E:\pro\github\flume_mysql\src\main\java\com\flume\dome\elastic\sink\EsRestSink.java
 E:\pro\github\flume_mysql\src\main\java\com\flume\dome\mysink\DBsqlSink.java
-E:\pro\github\flume_mysql\src\main\java\com\flume\dome\conver\ConverData.java
+E:\pro\github\flume_mysql\src\main\java\com\flume\dome\elastic\sink\ExtendsEsRestSink.java
+E:\pro\github\flume_mysql\src\main\java\com\flume\dome\utils\EsUtil.java
