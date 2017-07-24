@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.flume.dome.xutils.EsRestClientExt;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -83,17 +84,20 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 	private String clientType = DEFAULT_CLIENT_TYPE;
 	private final Pattern pattern = Pattern.compile(TTL_REGEX, Pattern.CASE_INSENSITIVE);
 	private Matcher matcher = pattern.matcher("");
-
 	private String[] serverAddresses = null;
-
 	private ElasticSearchClient client = null;
 	private Context elasticSearchClientContext = null;
-
 	private ElasticSearchIndexRequestBuilderFactory indexRequestFactory;
 	private ElasticSearchEventSerializer eventSerializer;
 	private IndexNameBuilder indexNameBuilder;
 	private SinkCounter sinkCounter;
+
+	// 自定义 ,目前只支持端口，用户密码都一致
 	private String josnTo = "true";// 是否转换json
+	// public static final String httpHost = "192.168.20.243";
+	public Integer port = 9200;
+	public String username = "elastic";
+	public String password = "123456";
 
 	/**
 	 * Create an {@link ElasticSearchSink} configured using the supplied
@@ -169,14 +173,14 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 				if (event == null) {
 					break;
 				}
-				content = new String(event.getBody());
-				logger.info("estaic josnTo {},src content:{}", josnTo, content);
+				content = new String(event.getBody(), "utf-8");
+				logger.debug("estaic josnTo {},src content:{}", josnTo, content);
 				if (josnTo != null && "true".equals(josnTo)) {
 					// 把文本按行分隔，把kv转json
-					actions = ConverData.conver(content);
+					actions = com.flume.dome.xutils.ConverData.conver(content);
 				} else {
 					// 加工数据
-					actions = ConverData.converStr(content);
+					actions = com.flume.dome.xutils.ConverData.converStr(content);
 				}
 				if (actions == null || actions.size() <= 0) {
 					break;
@@ -199,7 +203,7 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 				}
 				// 加入event
 				event.setBody(sb.toString().getBytes());
-				logger.info("estaic sink 处理后的数据 content:{}", content);
+				logger.debug("estaic sink 处理后的数据 content:{}", content);
 				// 多路复制时可以根据不同头部k,来分发不同的流向
 				// Map<String,String> headers=new HashMap<String,String>();
 				// headers.put("state", "multiplexing-es");
@@ -283,6 +287,9 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 		}
 
 		josnTo = context.getString("josnTo");
+		username = context.getString("username");
+		password = context.getString("password");
+		port = context.getInteger("port");
 
 		elasticSearchClientContext = new Context();
 		elasticSearchClientContext.putAll(context.getSubProperties(CLIENT_PREFIX));
@@ -355,18 +362,17 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 		logger.info("ElasticSearch sink {} started");
 		sinkCounter.start();
 		try {
-//			if (isLocal) {
-//				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
-//			} else {
-//				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
-//						indexRequestFactory);
-//				client.configure(elasticSearchClientContext);
-//			}
-		   client=  new EsRestSink(new String[]{},eventSerializer);
+			if (isLocal) {
+				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
+			} else {
+				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
+						indexRequestFactory);
+				client.configure(elasticSearchClientContext);
+			}
+			client = new EsRestClientExt(serverAddresses, eventSerializer, username, password, port);
 
-//			client=EsUtil.getRestClint();
-			
-			
+			// client=EsUtil.getRestClint();
+
 			sinkCounter.incrementConnectionCreatedCount();
 		} catch (Exception ex) {
 			ex.printStackTrace();

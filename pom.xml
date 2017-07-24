@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.flume.dome</groupId>
-	<artifactId>flume_dbsql</artifactId>
-	<version>0.0.10</version>
+	<artifactId>flume_ext_sink</artifactId>
+	<version>0.0.14</version>
 	<!-- <packaging>jar</packaging> -->
-	<name>flume_dbsql</name>
+	<name>flume_ext_sink</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -56,17 +56,16 @@
 <!--     <artifactId>httpclient</artifactId> -->
 <!--     <version>4.3</version> -->
 <!-- </dependency> -->
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.elasticsearch</groupId> -->
-<!-- 			<artifactId>elasticsearch</artifactId> -->
-<!-- 			<version>5.5.0</version> -->
-<!-- 		</dependency> -->
-<dependency>
-    <groupId>org.elasticsearch</groupId>
-    <artifactId>elasticsearch</artifactId>
-    <version>0.90.1</version>
-</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+<!-- <dependency> -->
+<!--     <groupId>org.elasticsearch</groupId> -->
+<!--     <artifactId>elasticsearch</artifactId> -->
+<!--     <version>0.90.1</version> -->
+<!-- </dependency> -->
 
 		<!-- 客户端 -->
 		<dependency>
