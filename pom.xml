@@ -5,7 +5,7 @@
 
 	<groupId>com.flume.dome</groupId>
 	<artifactId>flume_ext_sink</artifactId>
-	<version>0.0.14</version>
+	<version>0.0.18</version>
 	<!-- <packaging>jar</packaging> -->
 	<name>flume_ext_sink</name>
 	<url>http://maven.apache.org</url>
@@ -18,16 +18,16 @@
 			<groupId>org.apache.flume</groupId>
 			<artifactId>flume-ng-core</artifactId>
 			<version>${version.flume}</version>
-<!-- 			<exclusions> -->
-<!--                 		<exclusion> -->
-<!--                     			<groupId>org.apache.httpcomponents</groupId> -->
-<!--                     			<artifactId>httpcomponents-client</artifactId> -->
-<!--                 		</exclusion> -->
-<!--                 		<exclusion> -->
-<!--                     			<groupId>org.apache.httpcomponents</groupId> -->
-<!--                     			<artifactId>httpcomponents-core</artifactId> -->
-<!--                 		</exclusion> -->
-<!--             </exclusions> -->
+			<exclusions>
+                		<exclusion>
+                    			<groupId>org.apache.httpcomponents</groupId>
+                    			<artifactId>httpcomponents-client</artifactId>
+                		</exclusion>
+                		<exclusion>
+                    			<groupId>org.apache.httpcomponents</groupId>
+                    			<artifactId>httpcomponents-core</artifactId>
+                		</exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flume</groupId>
@@ -39,38 +39,59 @@
 			<groupId>org.apache.flume.flume-ng-sinks</groupId>
 			<artifactId>flume-ng-elasticsearch-sink</artifactId>
 			<version>${version.flume}</version>
-<!-- 			        <exclusions> -->
-<!--                 		<exclusion> -->
-<!--                     			<groupId>org.apache.httpcomponents</groupId> -->
-<!--                     			<artifactId>httpcomponents-client</artifactId> -->
-<!--                 		</exclusion> -->
-<!--                 		<exclusion> -->
-<!--                     			<groupId>org.apache.httpcomponents</groupId> -->
-<!--                     			<artifactId>httpcomponents-core</artifactId> -->
-<!--                 		</exclusion> -->
-<!--             		</exclusions> -->
+			        <exclusions>
+                		<exclusion>
+                    			<groupId>org.apache.httpcomponents</groupId>
+                    			<artifactId>httpcomponents-client</artifactId>
+                		</exclusion>
+                		<exclusion>
+                    			<groupId>org.apache.httpcomponents</groupId>
+                    			<artifactId>httpcomponents-core</artifactId>
+                		</exclusion>
+            		</exclusions>
 		</dependency>
 		
-<!-- <dependency> -->
-<!--     <groupId>org.apache.httpcomponents</groupId> -->
-<!--     <artifactId>httpclient</artifactId> -->
-<!--     <version>4.3</version> -->
-<!-- </dependency> -->
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>5.0.0</version>
-		</dependency>
-<!-- <dependency> -->
-<!--     <groupId>org.elasticsearch</groupId> -->
-<!--     <artifactId>elasticsearch</artifactId> -->
-<!--     <version>0.90.1</version> -->
-<!-- </dependency> -->
+
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.5.2</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpcore</artifactId>
+    <version>4.4.5</version>
+</dependency>
+
+
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpasyncclient</artifactId>
+    <version>4.1.2</version>
+</dependency>
+
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.elasticsearch</groupId> -->
+<!-- 			<artifactId>elasticsearch</artifactId> -->
+<!-- 			<version>5.5.0</version> -->
+<!-- 		</dependency> -->
+<dependency>
+    <groupId>org.elasticsearch</groupId>
+    <artifactId>elasticsearch</artifactId>
+    <version>0.90.1</version>
+</dependency>
 
 		<!-- 客户端 -->
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>rest</artifactId>
+			<version>5.5.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>transport</artifactId>
 			<version>5.5.0</version>
 		</dependency>
 

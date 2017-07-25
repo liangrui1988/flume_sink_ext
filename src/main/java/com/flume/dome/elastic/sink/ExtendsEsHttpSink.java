@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.flume.dome.elastic.client.EsHttpClientExt;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -60,18 +61,14 @@ import com.google.common.collect.Lists;
  * 对flume-ng-elasticsearch-sink 进行扩展
  * <p>
  * k=v转josn或数据加工处理 *
- * <p>
- * 不可用，需要升级版本的依懒
  * 
  * @author rui
  * @date 2017/7/21
  *
  */
+public class ExtendsEsHttpSink extends AbstractSink implements Configurable {
 
-@Deprecated
-public class TransportExtendsSink extends AbstractSink implements Configurable {
-
-	private static final Logger logger = LoggerFactory.getLogger(TransportExtendsSink.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExtendsEsHttpSink.class);
 
 	// Used for testing
 	private boolean isLocal = false;
@@ -87,23 +84,26 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 	private String clientType = DEFAULT_CLIENT_TYPE;
 	private final Pattern pattern = Pattern.compile(TTL_REGEX, Pattern.CASE_INSENSITIVE);
 	private Matcher matcher = pattern.matcher("");
-
 	private String[] serverAddresses = null;
-
 	private ElasticSearchClient client = null;
 	private Context elasticSearchClientContext = null;
-
 	private ElasticSearchIndexRequestBuilderFactory indexRequestFactory;
 	private ElasticSearchEventSerializer eventSerializer;
 	private IndexNameBuilder indexNameBuilder;
 	private SinkCounter sinkCounter;
+
+	// 自定义 ,目前只支持端口，用户密码都一致
 	private String josnTo = "true";// 是否转换json
+	// public static final String httpHost = "192.168.20.243";
+	public Integer port = 9200;
+	public String username = "elastic";
+	public String password = "123456";
 
 	/**
 	 * Create an {@link ElasticSearchSink} configured using the supplied
 	 * configuration
 	 */
-	public TransportExtendsSink() {
+	public ExtendsEsHttpSink() {
 		this(false);
 	}
 
@@ -118,7 +118,7 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 	 * 
 	 */
 	@VisibleForTesting
-	TransportExtendsSink(boolean isLocal) {
+	ExtendsEsHttpSink(boolean isLocal) {
 		this.isLocal = isLocal;
 	}
 
@@ -174,7 +174,7 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 					break;
 				}
 				content = new String(event.getBody(), "utf-8");
-				logger.info("estaic josnTo {},src content:{}", josnTo, content);
+				logger.debug("estaic josnTo {},src content:{}", josnTo, content);
 				if (josnTo != null && "true".equals(josnTo)) {
 					// 把文本按行分隔，把kv转json
 					actions = com.flume.dome.xutils.ConverData.conver(content);
@@ -199,31 +199,18 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 				StringBuffer sb = new StringBuffer();
 				for (JSONObject jobj : actions) {
 					jobj.put("server_id", sid);
-					if (StringUtils.isBlank(jobj.toJSONString())) {
-						continue;
-					}
 					sb.append(jobj.toJSONString());
-				}
-
-				if (StringUtils.isBlank(sb.toString())) {
-					break;
 				}
 				// 加入event
 				event.setBody(sb.toString().getBytes());
-				logger.info("estaic sink 处理后的数据 content:{}", sb.toString());
+				logger.debug("estaic sink 处理后的数据 content:{}", sb.toString());
 				// 多路复制时可以根据不同头部k,来分发不同的流向
 				// Map<String,String> headers=new HashMap<String,String>();
 				// headers.put("state", "multiplexing-es");
 				// headers.put("state", "multiplexing-db");
 				// event.setHeaders(headers);
 				String realIndexType = BucketPath.escapeString(indexType, event.getHeaders());
-
-				logger.info("estaic sink 处理后的数据 content:{}", sb.toString());
-
 				client.addEvent(event, indexNameBuilder, realIndexType, ttlMs);
-				logger.info("indexNameBuilder.getIndexName(event) 索引:{},type:{}", indexNameBuilder.getIndexName(event),
-						realIndexType);
-
 			}
 
 			if (count <= 0) {
@@ -243,6 +230,7 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 			txn.commit();
 			sinkCounter.addToEventDrainSuccessCount(count);
 			counterGroup.incrementAndGet("transaction.success");
+			
 		} catch (Throwable ex) {
 			try {
 				txn.rollback();
@@ -300,6 +288,9 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 		}
 
 		josnTo = context.getString("josnTo");
+		username = context.getString("username");
+		password = context.getString("password");
+		port = context.getInteger("port");
 
 		elasticSearchClientContext = new Context();
 		elasticSearchClientContext.putAll(context.getSubProperties(CLIENT_PREFIX));
@@ -372,13 +363,15 @@ public class TransportExtendsSink extends AbstractSink implements Configurable {
 		logger.info("ElasticSearch sink {} started");
 		sinkCounter.start();
 		try {
-			if (isLocal) {
-				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
-			} else {
-				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
-						indexRequestFactory);
-				client.configure(elasticSearchClientContext);
-			}
+//			if (isLocal) {
+//				client = clientFactory.getLocalClient(clientType, eventSerializer, indexRequestFactory);
+//			} else {
+//				client = clientFactory.getClient(clientType, serverAddresses, clusterName, eventSerializer,
+//						indexRequestFactory);
+//				client.configure(elasticSearchClientContext);
+//			}
+			client = new EsHttpClientExt(serverAddresses, eventSerializer, username, password, port);
+			// client=EsUtil.getRestClint();
 			sinkCounter.incrementConnectionCreatedCount();
 		} catch (Exception ex) {
 			ex.printStackTrace();
