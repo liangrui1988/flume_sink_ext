@@ -202,7 +202,7 @@ public class ExtendsEsHttpSink extends AbstractSink implements Configurable {
 					sb.append(jobj.toJSONString());
 				}
 				// 加入event
-				event.setBody(sb.toString().getBytes());
+				event.setBody(sb.toString().getBytes("utf-8"));
 				logger.debug("estaic sink 处理后的数据 content:{}", sb.toString());
 				// 多路复制时可以根据不同头部k,来分发不同的流向
 				// Map<String,String> headers=new HashMap<String,String>();
