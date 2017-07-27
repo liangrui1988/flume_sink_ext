@@ -68,19 +68,19 @@ public class EsRestClientExt implements ElasticSearchClient {
 	 * 
 	 * @return
 	 */
-	public RestClient getRestAsyncClint(String httpHost, Integer port, String username, String password) {
+	public RestClient getRestClint(String httpHost, Integer port, String username, String password) {
 		credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 		RestClient restClient = RestClient.builder(new HttpHost(httpHost, port))
 				.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
 					public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-						 // disable preemptive authentication
-//		                httpClientBuilder.disableAuthCaching();
+						// disable preemptive authentication
+						// httpClientBuilder.disableAuthCaching();
 						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 					}
 				}).build();
 		return restClient;
 	}
-	
+
 	public EsRestClientExt(String[] hostNames, ElasticSearchEventSerializer serializer, String username,
 			String password, Integer port) {
 		// for (int i = 0; i < hostNames.length; ++i) {
@@ -134,7 +134,6 @@ public class EsRestClientExt implements ElasticSearchClient {
 	}
 
 	public void execute() throws Exception {
-
 		int statusCode = 0, triesCount = 0;// 偿试多次，有几个host就偿试几次
 		// HttpResponse response = null;
 		org.elasticsearch.client.Response response = null;
@@ -155,10 +154,10 @@ public class EsRestClientExt implements ElasticSearchClient {
 			// response = httpClient.execute(httpRequest);
 			logger.debug("打印出 host: " + host);
 			logger.debug("打印出 entity: " + entity);
-			RestClient client = getRestAsyncClint(host, port, username, password);
+			RestClient client = getRestClint(host, port, username, password);
 			try {
 				response = client.performRequest("POST", "/" + BULK_ENDPOINT,
-						Collections.singletonMap("pretty", "true"), new StringEntity(entity, "utf-8"));
+						Collections.<String, String>emptyMap(), new StringEntity(entity, "utf-8"));
 				statusCode = response.getStatusLine().getStatusCode();
 				logger.debug("返回状态  Status code from elasticsearch: " + statusCode);
 				if (response.getEntity() != null) {
@@ -168,9 +167,10 @@ public class EsRestClientExt implements ElasticSearchClient {
 
 			} catch (Exception e) {
 				e.printStackTrace();
-			} finally {
-				client.close();
 			}
+			// finally {
+            // client.close();
+			// }
 		}
 		if (statusCode != HttpStatus.SC_OK) {
 			if (response.getEntity() != null) {
