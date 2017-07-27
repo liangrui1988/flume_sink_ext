@@ -30,6 +30,7 @@ import org.apache.flume.sink.elasticsearch.ElasticSearchEventSerializer;
 import org.apache.flume.sink.elasticsearch.IndexNameBuilder;
 import org.apache.flume.sink.elasticsearch.client.ElasticSearchClient;
 import org.apache.flume.sink.elasticsearch.client.RoundRobinList;
+import org.apache.http.Consts;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -146,7 +147,7 @@ public class EsHttpClientExt implements ElasticSearchClient {
 			String host = serversList.get();
 			String url = host + "/" + BULK_ENDPOINT;
 			HttpPost httpRequest = new HttpPost(url);
-			httpRequest.setEntity(new StringEntity(entity));
+			httpRequest.setEntity(new StringEntity(entity,Consts.UTF_8));
 			logger.debug("打印出 url: " + url);
 			logger.debug("打印出 entity: " + entity);
 			// 或都 header写死
