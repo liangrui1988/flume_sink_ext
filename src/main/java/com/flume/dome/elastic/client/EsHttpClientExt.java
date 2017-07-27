@@ -153,6 +153,7 @@ public class EsHttpClientExt implements ElasticSearchClient {
 			httpRequest.setHeader("Authorization", "Basic ZWxhc3RpYzoxMjM0NTY=");
 			httpRequest.setHeader("Cookie",
 					"sid=Fe26.2**1cb1377880e0bfe8ca5c210dc0293b4ccac3ac746d9a7d5ae99554282b34abaa*Yiuw0D4KTDyUrkiJKYYScA*ALh7r9ombireJ0er01_46_MAoK8Vjsb_hCZB9mBy_P7Z3JZtf_K-TUdlwKYnGrVIUPC9I0fEFTMmwV7AzXExmw**554d722569d9dea45f5275b077d7d39cd04c59f50fe1e25b5abdb36a7809898b*M7hE0_CgUu7-AhYWQayd0eeQPCdIyih2EWuOCeSavro");
+			httpRequest.setHeader("Content-Type", "application/json; charset=UTF-8");
 			// Authorization =Basic ZWxhc3RpYzoxMjM0NTY=
 			// Cookie
 			// =sid=Fe26.2**1cb1377880e0bfe8ca5c210dc0293b4ccac3ac746d9a7d5ae99554282b34abaa*Yiuw0D4KTDyUrkiJKYYScA*ALh7r9ombireJ0er01_46_MAoK8Vjsb_hCZB9mBy_P7Z3JZtf_K-TUdlwKYnGrVIUPC9I0fEFTMmwV7AzXExmw**554d722569d9dea45f5275b077d7d39cd04c59f50fe1e25b5abdb36a7809898b*M7hE0_CgUu7-AhYWQayd0eeQPCdIyih2EWuOCeSavro
