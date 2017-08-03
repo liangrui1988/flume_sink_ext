@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dianping.cat.Cat;
 import com.flume.dome.xutils.ConverData;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -47,6 +48,11 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	}
 
 	public Status process() throws EventDeliveryException {
+		
+		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume");
+		// cat监控记录一事件
+		Cat.logEvent("Exec.eventx", serverId.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + serverId);
+		
 		Status result = Status.READY;
 		Channel channel = getChannel();
 		Transaction transaction = channel.getTransaction();
@@ -59,6 +65,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 		try {
 			for (int i = 0; i < batchSize; i++) {
 				event = channel.take();// 从通道中获取数据
+				//一条日志
+				Cat.logMetricForCount("flume-db-log-take");
 				if (event != null) {
 					content = new String(event.getBody());
 //					Log.info("josnTo {},src content:{}", josnTo, content);
@@ -77,6 +85,8 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					break;
 				}
 			}
+			
+	
 			
 			String com_way="0";
 			
@@ -138,9 +148,15 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					preparedStatement2.executeBatch();
 //				}
 				conn.commit();
+				//批量提交了多少
+				Cat.logMetricForSum("flume-db-batchSizeCount", batchSize);
+				// 监控提交状态
+				t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
 			}
 			transaction.commit();
 		} catch (Throwable e) {
+			// 监控提交状态
+			t.setStatus(e);
 			try {
 				transaction.rollback();
 			} catch (Exception e2) {
@@ -149,6 +165,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			LOG.error("Failed to commit transaction." + "Transaction rolled back.", e);
 			Throwables.propagate(e);
 		} finally {
+			t.complete();// 监控提交状态
 			transaction.close();
 		}
 		return result;
