@@ -14,7 +14,6 @@ import org.apache.flume.CounterGroup;
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
 import org.apache.flume.Transaction;
-import org.apache.flume.Sink.Status;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.instrumentation.SinkCounter;
 import org.apache.flume.sink.AbstractSink;
@@ -161,25 +160,38 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				// event发送成功
 				sinkCounter.addToEventDrainSuccessCount(count);
 				counterGroup.incrementAndGet("transaction.success");
+			} else {
+				conn.rollback();
+				transaction.rollback();
+				counterGroup.incrementAndGet("transaction.rollback");
+
 			}
 			// 实际批量提交了多少
 			Cat.logMetricForSum("flume-db-commit_count", commit_count);
 			// 监控提交状态
 			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
-		} catch (Throwable e) {
+		} catch (Throwable ex) {
 			// 监控提交状态
-			t.setStatus(e);
+			t.setStatus(ex);
 			try {
 				transaction.rollback();
-		        counterGroup.incrementAndGet("transaction.rollback");
-			} catch (Exception e2) {
-				LOG.error("Exception in rollback. Rollback might not have been" + "successful.", e2);
+				counterGroup.incrementAndGet("transaction.rollback");
+			} catch (Exception ex2) {
+				LOG.error("Exception in rollback. Rollback might not have been successful.", ex2);
 			}
-			LOG.error("Failed to commit transaction." + "Transaction rolled back.", e);
-			Throwables.propagate(e);
+
+			if (ex instanceof Error || ex instanceof RuntimeException) {
+				LOG.error("Failed to commit transaction. Transaction rolled back.", ex);
+				Throwables.propagate(ex);
+			} else {
+				LOG.error("Failed to commit transaction. Transaction rolled back.", ex);
+				throw new EventDeliveryException("Failed to commit transaction. Transaction rolled back.", ex);
+			}
+
 		} finally {
 			t.complete();// 监控提交状态
 			transaction.close();
+			// conn.close();
 		}
 		return status;
 	}
