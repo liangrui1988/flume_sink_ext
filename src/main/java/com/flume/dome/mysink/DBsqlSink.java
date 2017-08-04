@@ -57,7 +57,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 
 		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume-" + serverId);
 		// cat监控记录一事件
-		Cat.logEvent("Exec.event", serverId.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + serverId);
+		Cat.logEvent("Exec.event-"+ serverId, serverId.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + serverId);
 		Channel channel = getChannel();
 		Transaction transaction = channel.getTransaction();
 		Event event;
