@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.set.SynchronizedSet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,8 +108,10 @@ public class ConverData {
 
 				}
 			}
-
-			list.add(jsons);
+			// 去掉不要的数据
+			if (StringUtils.isNotBlank(jsons.toJSONString()) && !"{}".equals(jsons.toJSONString())) {
+				list.add(jsons);
+			}
 		}
 		return list;
 	}
@@ -172,6 +175,9 @@ public class ConverData {
 	}
 
 	public static void main(String[] args) throws ParseException {
+		JSONObject jsons = new JSONObject();
+
+		System.out.println(jsons);
 
 		int i = getStrToCount("2017-06-16 15:23:07:383", ":");
 		System.out.println(i);

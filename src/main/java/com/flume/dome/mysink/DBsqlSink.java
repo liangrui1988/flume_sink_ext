@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.flume.Channel;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
@@ -24,7 +25,6 @@ import com.flume.dome.xutils.ConverData;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-
 
 public class DBsqlSink extends AbstractSink implements Configurable {
 
@@ -48,11 +48,11 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	}
 
 	public Status process() throws EventDeliveryException {
-		
+
 		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume");
 		// cat监控记录一事件
 		Cat.logEvent("Exec.eventx", serverId.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + serverId);
-		
+
 		Status result = Status.READY;
 		Channel channel = getChannel();
 		Transaction transaction = channel.getTransaction();
@@ -65,11 +65,11 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 		try {
 			for (int i = 0; i < batchSize; i++) {
 				event = channel.take();// 从通道中获取数据
-				//一条日志
+				// 一条日志
 				Cat.logMetricForCount("flume-db-log-take");
 				if (event != null) {
 					content = new String(event.getBody());
-//					Log.info("josnTo {},src content:{}", josnTo, content);
+					// Log.info("josnTo {},src content:{}", josnTo, content);
 					if (josnTo != null && "true".equals(josnTo)) {
 						// 把文本按行分隔，把kv转json
 						List<JSONObject> action = ConverData.conver(content);
@@ -78,82 +78,74 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 						// 字符串转json
 						List<JSONObject> action = ConverData.converStr(content);
 						actions.addAll(action);
-
 					}
 				} else {
+					// 没记录的数据
+					Cat.logMetricForCount("flume-db-log-take-backoff");
 					result = Status.BACKOFF;
 					break;
 				}
 			}
-			
-	
-			
-			String com_way="0";
-			
-			if (actions.size() > 0) {
-				preparedStatement.clearBatch();
-				preparedStatement2.clearBatch();
-				for (JSONObject json : actions) {
-					Log.info("log inserint json:{}", json.toString());
-					//如果是属性，则插入另一张表
-					if("attrs".equals(json.getString("file"))){
-//						StringBuffer sb=new StringBuffer();
-//						sb.append("INSERT INTO ");
-//						sb.append(tableName);
-//						sb.append("_attrs(server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?) ");
-//						Log.info("log _attrs inserint sql:{}", sb.toString());
-						
-						// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
-						if (serverId == null) {
-							preparedStatement2.setInt(1, -2);
-						} else {
-							preparedStatement2.setInt(1, Integer.valueOf(serverId));
-						}
-						preparedStatement2.setString(2, json.toString());
-						preparedStatement2.setString(3, json.getString("time"));
-						preparedStatement2.setString(4, json.getString("file"));
-						preparedStatement2.setLong(5, json.getLongValue("time_log"));
-						preparedStatement2.setLong(6, json.getLongValue("uuid"));
-						preparedStatement2.addBatch();
-						com_way="2";
 
-					}else{
-//						StringBuffer sb=new StringBuffer();
-//						sb.append("INSERT INTO ");
-//						sb.append(tableName);
-//						sb.append("(server_id,cont,time,file) VALUES (?,cast(? AS json),cast(? AS timestamp),?) ");
-//						preparedStatement.addBatch(sb.toString());
-						
-						// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
-						if (serverId == null) {
-							preparedStatement.setInt(1, -2);
-						} else {
-							preparedStatement.setInt(1, Integer.valueOf(serverId));
-						}
-						preparedStatement.setString(2, json.toString());
-						preparedStatement.setString(3, json.getString("time"));
-						preparedStatement.setString(4, json.getString("file"));
-						preparedStatement.setLong(5, json.getLongValue("time_log"));
-						preparedStatement.setLong(6, json.getLongValue("uuid"));
-						preparedStatement.addBatch();
-						com_way="1";
-
-					}
-				}
-				//提交那个sql
-//				if("1".equals(com_way)){
-					preparedStatement.executeBatch();
-//				}
-//				if("2".equals(com_way)){
-					preparedStatement2.executeBatch();
-//				}
-				conn.commit();
-				//批量提交了多少
-				Cat.logMetricForSum("flume-db-batchSizeCount", batchSize);
-				// 监控提交状态
-				t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
+			if (actions == null || actions.size() <= 0) {
+				// 没记录的数据
+				Cat.logMetricForCount("flume-db-log-take-backoff");
+				result =  Status.BACKOFF;
 			}
+			preparedStatement.clearBatch();
+			preparedStatement2.clearBatch();
+			for (JSONObject json : actions) {
+				Log.info("log inserint json:{}", json.toString());
+				if (StringUtils.isBlank(json.toJSONString()) || "{}".equals(json.toString())) {
+					// 没记录的数据
+					Cat.logMetricForCount("flume-db-log-take-backoff");
+					continue;
+				}
+				// 如果是属性，则插入另一张表
+				if ("attrs".equals(json.getString("file"))) {
+					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
+					if (serverId == null) {
+						preparedStatement2.setInt(1, -2);
+					} else {
+						preparedStatement2.setInt(1, Integer.valueOf(serverId));
+					}
+					preparedStatement2.setString(2, json.toString());
+					preparedStatement2.setString(3, json.getString("time"));
+					preparedStatement2.setString(4, json.getString("file"));
+					preparedStatement2.setLong(5, json.getLongValue("time_log"));
+					preparedStatement2.setLong(6, json.getLongValue("uuid"));
+					preparedStatement2.addBatch();
+
+				} else {
+					// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
+					if (serverId == null) {
+						preparedStatement.setInt(1, -2);
+					} else {
+						preparedStatement.setInt(1, Integer.valueOf(serverId));
+					}
+					preparedStatement.setString(2, json.toString());
+					preparedStatement.setString(3, json.getString("time"));
+					preparedStatement.setString(4, json.getString("file"));
+					preparedStatement.setLong(5, json.getLongValue("time_log"));
+					preparedStatement.setLong(6, json.getLongValue("uuid"));
+					preparedStatement.addBatch();
+
+				}
+			}
+			// 提交那个sql
+			// if("1".equals(com_way)){
+			preparedStatement.executeBatch();
+			// }
+			// if("2".equals(com_way)){
+			preparedStatement2.executeBatch();
+			// }
+			conn.commit();
 			transaction.commit();
+			// 批量提交了多少
+			Cat.logMetricForSum("flume-db-batchSizeCount", batchSize);
+			// 监控提交状态
+			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
+	
 		} catch (Throwable e) {
 			// 监控提交状态
 			t.setStatus(e);
