@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dianping.cat.Cat;
 
 /**
  * 2017/06/22
@@ -111,6 +112,9 @@ public class ConverData {
 			// 去掉不要的数据
 			if (StringUtils.isNotBlank(jsons.toJSONString()) && !"{}".equals(jsons.toJSONString())) {
 				list.add(jsons);
+			} else {
+				// 没记录的数据
+				// Cat.logMetricForCount("flume-db-log-jsos-{}");
 			}
 		}
 		return list;
