@@ -1,0 +1,1 @@
+-Dflume.monitoring.type=http -Dflume.monitoring.port=34545

@@ -54,10 +54,10 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	public Status process() throws EventDeliveryException {
 		LOG.debug("processing...");
 		Status status = Status.READY;
-
 		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume-" + serverId);
 		// cat监控记录一事件
-		Cat.logEvent("Exec.event-"+ serverId, serverId.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + serverId);
+		Cat.logEvent("Exec.event-" + serverId, serverId.toString(), com.dianping.cat.message.Event.SUCCESS,
+				"sid=" + serverId);
 		Channel channel = getChannel();
 		Transaction transaction = channel.getTransaction();
 		Event event;
@@ -91,7 +91,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			}
 
 			// 检查批量是否合法
-			if (count <= 0) {
+			if (count <= 0 || actions == null || actions.size() < 0) {
 				sinkCounter.incrementBatchEmptyCount();
 				counterGroup.incrementAndGet("channel.underflow");
 				status = Status.BACKOFF;
@@ -100,14 +100,16 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					sinkCounter.incrementBatchUnderflowCount();
 					status = Status.BACKOFF;
 				} else {
+					// 提交-原码实现
 					sinkCounter.incrementBatchCompleteCount();
 				}
-			}
-
-			// 偿试event事件发送
-			sinkCounter.addToEventDrainAttemptCount(count);
-			int commit_count = 0;
-			if (actions != null && actions.size() > 0) {
+				// 提交
+				// sinkCounter.addToEventDrainAttemptCount(count);
+				// client.execute();
+				// 偿试event事件发送
+				sinkCounter.addToEventDrainAttemptCount(count);
+				// int commit_count = 0;
+				// if (actions != null && actions.size() > 0) {
 				preparedStatement.clearBatch();
 				preparedStatement2.clearBatch();
 				for (JSONObject json : actions) {
@@ -131,7 +133,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 						preparedStatement2.setLong(5, json.getLongValue("time_log"));
 						preparedStatement2.setLong(6, json.getLongValue("uuid"));
 						preparedStatement2.addBatch();
-						commit_count++;
+						// commit_count++;
 					} else {
 						// 对占位符设置值，占位符顺序从1开始，第一个参数是占位符的位置，第二个参数是占位符的值。
 						if (serverId == null) {
@@ -145,7 +147,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 						preparedStatement.setLong(5, json.getLongValue("time_log"));
 						preparedStatement.setLong(6, json.getLongValue("uuid"));
 						preparedStatement.addBatch();
-						commit_count++;
+						// commit_count++;
 					}
 				}
 				// 提交那个sql
@@ -156,20 +158,23 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				preparedStatement2.executeBatch();
 				// }
 				conn.commit();
-				transaction.commit();
-				// event发送成功
-				sinkCounter.addToEventDrainSuccessCount(count);
-				counterGroup.incrementAndGet("transaction.success");
-			} else {
-				conn.rollback();
-				transaction.rollback();
-				counterGroup.incrementAndGet("transaction.rollback");
+				// } else {
+				// conn.rollback();
+				// transaction.rollback();
+				// counterGroup.incrementAndGet("transaction.rollback");
+				//
+				// }
 
 			}
+			transaction.commit();
+			// event发送成功
+			sinkCounter.addToEventDrainSuccessCount(count);
+			counterGroup.incrementAndGet("transaction.success");
 			// 实际批量提交了多少
-			Cat.logMetricForSum("flume-db-commit_count", commit_count);
+			Cat.logMetricForSum("flume-db-commit_count", count);
 			// 监控提交状态
 			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
+
 		} catch (Throwable ex) {
 			// 监控提交状态
 			t.setStatus(ex);
