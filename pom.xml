@@ -5,7 +5,7 @@
 
 	<groupId>com.flume.dome</groupId>
 	<artifactId>flume_ext_sink</artifactId>
-	<version>0.0.29</version>
+	<version>0.0.30</version>
 	<!-- <packaging>jar</packaging> -->
 	<name>flume_ext_sink</name>
 	<url>http://maven.apache.org</url>
@@ -51,6 +51,11 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.flume.flume-ng-sinks</groupId>
+			<artifactId>flume-ng-kafka-sink</artifactId>
+			<version>1.7.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -96,11 +101,11 @@
 		</dependency>
 
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.elasticsearch.client</groupId> -->
-<!-- 			<artifactId>sniffer</artifactId> -->
-<!-- 			<version>5.5.1</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.elasticsearch.client</groupId> -->
+		<!-- <artifactId>sniffer</artifactId> -->
+		<!-- <version>5.5.1</version> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -120,13 +125,13 @@
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
-		
-	 <!-- cat 监控 -->
-	<dependency>
-		<groupId>com.dianping.cat</groupId>
-		<artifactId>cat-client</artifactId>
-		<version>1.4.0</version>
-	</dependency>
-	
+
+		<!-- cat 监控 -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-client</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
 	</dependencies>
 </project>

@@ -125,15 +125,15 @@ public class ConverData {
 	 * 
 	 * @param context
 	 * @return
+	 * @throws ParseException
 	 */
-	public static List<JSONObject> converStr(String context) {
+	public static List<JSONObject> converStr(String context) throws ParseException {
 		List<JSONObject> list = new LinkedList<JSONObject>();
 		// 拆分一行
 		String[] contents = context.split("\n");
 		if (contents == null || contents.length <= 0) {
 			return list;
 		}
-
 		for (int i = 0; i < contents.length; i++) {
 			JSONObject jsons = new JSONObject();
 			if (contents[i] == null || "".equals(contents[i])) {
@@ -150,17 +150,22 @@ public class ConverData {
 				e.printStackTrace();
 				continue;
 			}
-			// 时间去掉毫秒
+
 			if (jsons.containsKey("time")) {
+				// 存储有毫秒时间戳
 				String t = jsons.get("time").toString();
+				// 2017-07-10 12:03:47:307
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+				long dt = df.parse(t).getTime();
+				jsons.put("time_log", dt);
+				// 时间去掉毫秒
 				if (getStrToCount(t, ":") == 3) {// 如果时间带有毫秒，则去掉
 					String tdata = t.substring(0, t.lastIndexOf(":"));
 					jsons.put("time", tdata);
-				}
-			}
-			// 把uuid转出来，作为索引
-			if (jsons.containsKey("uuid")) {
+				} else {
+					jsons.put("time", t);
 
+				}
 			}
 
 			list.add(jsons);
@@ -180,15 +185,11 @@ public class ConverData {
 
 	public static void main(String[] args) throws ParseException {
 		JSONObject jsons = new JSONObject();
-
 		System.out.println(jsons);
-
 		int i = getStrToCount("2017-06-16 15:23:07:383", ":");
 		System.out.println(i);
-
 		// gamedb______file=temp_targetor`time=2017-06-16
 		// 15:23:07:383`uuid=10000005`name=巴尔杜勒`hp=338`en=1000`status=[]`buffs=[]`A_62=1000`A_11=21`A_63=15`A_68=102`A_15=0`A_64=27`A_20=0`A_17=54`A_65=0`A_13=0`A_0=0`A_8=0`A_67=54`A_7=1000`A_66=0`A_1=12`A_69=100`A_3=0`A_119=0`A_6=0`A_2=8`A_118=0`A_120=10000`A_10=0`A_9=11`A_19=86`A_14=0`A_5=98`A_18=0`A_61=338`A_22=0`A_21=60`A_127=1000000`A_16=0`A_4=0`A_12=0`actor_id=101`actor_type=human`race=1`dungeon_id=1001`
-
 		String context = "file=temp_targetor`time=2017-06-16 15:23:07:383`uuid=10000005`name=巴尔杜勒`hp=338`en=1000`status=[]`buffs=[]`A_62=1000`A_11=21`A_63=15`A_68=102`A_15=0`A_64=27`A_20=0`A_17=54`A_65=0`A_13=0`A_0=0`A_8=0`A_67=54`A_7=1000`A_66=0`A_1=12`A_69=100`A_3=0`A_119=0`A_6=0`A_2=8`A_118=0`A_120=10000`A_10=0`A_9=11`A_19=86`A_14=0`A_5=98`A_18=0`A_61=338`A_22=0`A_21=60`A_127=1000000`A_16=0`A_4=0`A_12=0`actor_id=101`actor_type=human`race=1`dungeon_id=1001`";
 		context += "\n";
 		context += "file=effect`time=2017-06-16 15:24:33:124`uuid=10009`name=测试BOSS石头人`effect_id=15000`effect_type=add_hp_scale`skill_id=91016`target=10009`actor_id=10004`actor_type=mon`race=1001`dungeon_id=1001`";
