@@ -54,6 +54,8 @@ public class ConverDataInterceptor implements Interceptor {
 			// 转换
 			String content = new String(event.getBody(), "utf-8");
 			LOG.debug("拦截器 处理前event.getBody()数据 content:{}", content);
+			LOG.debug("拦截器 处理前event.getHeaders() 数据 Headers:{}", event.getHeaders());
+
 			if (StringUtils.isBlank(content)) {
 				return null;
 			}
