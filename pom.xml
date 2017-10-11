@@ -101,6 +101,14 @@
 		</dependency>
 
 
+	<!-- https://mvnrepository.com/artifact/org.apache.flume.flume-ng-sinks/flume-ng-hbase-sink -->
+	<dependency>
+		<groupId>org.apache.flume.flume-ng-sinks</groupId>
+		<artifactId>flume-ng-hbase-sink</artifactId>
+		<version>1.7.0</version>
+	</dependency>
+
+
 		<!-- <dependency> -->
 		<!-- <groupId>org.elasticsearch.client</groupId> -->
 		<!-- <artifactId>sniffer</artifactId> -->
