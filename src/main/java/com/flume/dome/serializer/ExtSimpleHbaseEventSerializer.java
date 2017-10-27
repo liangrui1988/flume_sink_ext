@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
@@ -32,6 +33,7 @@ import org.apache.flume.sink.hbase.SimpleRowKeyGenerator;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +77,7 @@ public class ExtSimpleHbaseEventSerializer implements HbaseEventSerializer {
 	private byte[] payload;
 	// 常量名
 	private static final String SERVER_ID_CONST = "server_id";
-//	private String server_id;
+	// private String server_id;
 
 	public ExtSimpleHbaseEventSerializer() {
 	}
@@ -153,6 +155,20 @@ public class ExtSimpleHbaseEventSerializer implements HbaseEventSerializer {
 					String[] kv2 = str.split("=");
 					if (kv2 != null && kv2.length == 2) {
 						byte[] payloadColumn_conev = kv2[0].getBytes(Charsets.UTF_8);
+						// long double值转换，如果需要条件查询时会用到比较，不然是以字符串作为比较
+//						byte[] payload_conevt = null;
+//						String v2 = kv2[1];
+//						if (StringUtils.isNumeric(v2)) {
+//							if (v2.contains(".")) {
+//								// double
+//								Double l_v = Double.valueOf(kv2[1]);
+//								payload_conevt = Bytes.toBytes(l_v);
+//							} else {
+//								Long l_v = Long.valueOf(kv2[1]);
+//								payload_conevt = Bytes.toBytes(l_v);
+//							}
+//
+//						}
 						byte[] payload_conev = kv2[1].getBytes(Charsets.UTF_8);
 						LOG.debug("rowKey>:{},payloadColumn>:{},payload>:{}", new Object[] { new String(rowKey),
 								new String(payloadColumn_conev), new String(payload_conev) });
