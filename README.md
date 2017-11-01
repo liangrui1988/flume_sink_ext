@@ -43,7 +43,14 @@ a1.channels.c1.transactionCapacity = 100
 
 
 启动flume agent al
-bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=INFO,console
+bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=DEBUG,console
+
+
+bin/flume-ng agent --conf conf --conf-file conf/all_dir_flume_to_pgsql.conf --name a1 -Dflume.root.logger=DEBUG,console
+
+
+../bin/flume-ng agent --conf ../conf --conf-file ../conf/all_dir_flume_to_pg.conf  --name a1 -Dflume.root.logger=DEBUG,console
+
 
 
 nohup bin/flume-ng agent --conf conf --conf-file conf/dbsql_sink_4.conf --name a1 -Dflume.root.logger=INFO,console &
