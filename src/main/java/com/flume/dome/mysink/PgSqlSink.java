@@ -8,6 +8,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.flume.Channel;
 import org.apache.flume.Context;
@@ -65,11 +66,14 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 				LOG.debug("event...{}", event);
 				if (event == null) {
 					if (i == 0) {
+						// No events found, request back-off semantics from
+						// runner
 						status = Status.BACKOFF;
 						sinkCounter.incrementBatchEmptyCount();
 					} else {
 						sinkCounter.incrementBatchUnderflowCount();
 					}
+
 					break;
 				} else {
 					String content = new String(event.getBody(), "utf-8");
