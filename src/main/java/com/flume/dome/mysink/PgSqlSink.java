@@ -210,7 +210,7 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 			// json),cast(? AS timestamp),?,?,?)";
 
 			String sql = "INSERT INTO " + tableName
-					+ " (server_id,cont,time,file,time_log,uuid) VALUES (?,cast(? AS json),cast(? AS timestamp),?,?,?)";
+					+ " (server_id,cont,time,file,time_log,uuid) VALUES (?,cast(? AS jsonb),cast(? AS timestamp),?,?,?)";
 			preparedStatement = conn.prepareStatement(sql);
 		} catch (SQLException e) {
 			sinkCounter.incrementConnectionFailedCount();
