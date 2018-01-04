@@ -122,21 +122,28 @@ public class ConverDataObject {
 			LOG.error("解析json 错误:{}", context);
 			e.printStackTrace();
 		}
-		if (jsons != null && jsons.containsKey("time")) {
-			// 存储有毫秒时间戳
-			String t = jsons.get("time").toString();
-			// 2017-07-10 12:03:47:307
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-			long dt = df.parse(t).getTime();
-			jsons.put("time_log", dt);
-			// 时间去掉毫秒
-			if (getStrToCount(t, ":") == 3) {// 如果时间带有毫秒，则去掉
-				String tdata = t.substring(0, t.lastIndexOf(":"));
-				jsons.put("time", tdata);
-			} else {
-				jsons.put("time", t);
-			}
-		}
+//		if (jsons != null && jsons.containsKey("time")) {
+//			// 存储有毫秒时间戳
+//			String t = jsons.get("time").toString();
+//			// 2017-07-10 12:03:47:307
+//			long dt = 0;
+//			
+//			if(t.endsWith("SSS")){
+//				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+//				 dt = df.parse(t).getTime();
+//			}else{
+//				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//				 dt = df.parse(t).getTime();
+//			}
+//			jsons.put("time_log", dt);
+//			// 时间去掉毫秒
+//			if (getStrToCount(t, ":") == 3) {// 如果时间带有毫秒，则去掉
+//				String tdata = t.substring(0, t.lastIndexOf(":"));
+//				jsons.put("time", tdata);
+//			} else {
+//				jsons.put("time", t);
+//			}
+//		}
 		return jsons;
 	}
 

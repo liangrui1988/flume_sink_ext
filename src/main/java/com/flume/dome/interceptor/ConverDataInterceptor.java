@@ -1,6 +1,11 @@
 package com.flume.dome.interceptor;
 
-import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.*;
+import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.CONSIDER;
+import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.CONSIDER_DFLT;
+import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.JSONCONVER;
+import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.JSON_CONVER_DFLT;
+import static com.flume.dome.interceptor.ConverDataInterceptor.Constants.PRESERVE_DFLT;
+
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.LinkedList;
@@ -11,8 +16,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
+import org.apache.flume.interceptor.TimestampInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.alibaba.fastjson.JSONObject;
 import com.flume.dome.xutils.ConverDataObject;
 
