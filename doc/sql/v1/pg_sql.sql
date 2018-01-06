@@ -71,3 +71,80 @@ drop table zl.zl_log_info2018_9;
 drop table zl.zl_log_info2018_10;
 drop table zl.zl_log_info2018_11;
 drop table zl.zl_log_info2018_12;
+
+
+
+-- 触发器函数
+CREATE
+OR REPLACE FUNCTION fn_zl_log_info_main_insert_trigger () RETURNS TRIGGER AS $$
+BEGIN
+IF (
+  NEW .time >= DATE '2018-01-01'  AND NEW .time < DATE '2018-02-01'
+) THEN
+  INSERT INTO zl_log_info2018_1 VALUES  (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-02-01'  AND NEW .time < DATE '2018-03-01'
+) THEN
+  INSERT INTO zl_log_info2018_2 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-03-01'  AND NEW .time < DATE '2018-04-01'
+) THEN
+  INSERT INTO zl_log_info2018_3 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-04-01'  AND NEW .time < DATE '2018-05-01'
+) THEN
+  INSERT INTO zl_log_info2018_4 VALUES (NEW .*) ;
+  ELSEIF (
+  NEW .time >= DATE '2018-05-01'  AND NEW .time < DATE '2018-06-01'
+) THEN
+  INSERT INTO zl_log_info2018_5 VALUES (NEW .*) ;
+  ELSEIF (
+  NEW .time >= DATE '2018-06-01'  AND NEW .time < DATE '2018-07-01'
+) THEN
+  INSERT INTO zl_log_info2018_6 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-07-01'  AND NEW .time < DATE '2018-08-01'
+) THEN
+  INSERT INTO zl_log_info2018_7 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-08-01'  AND NEW .time < DATE '2018-09-01'
+) THEN
+  INSERT INTO zl_log_info2018_8 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-09-01'  AND NEW .time < DATE '2018-10-01'
+) THEN
+  INSERT INTO zl_log_info2018_9 VALUES (NEW .*) ;
+    ELSEIF (
+  NEW .time >= DATE '2018-10-01'  AND NEW .time < DATE '2018-11-01'
+) THEN
+  INSERT INTO zl_log_info2018_10 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-11-01'  AND NEW .time < DATE '2018-12-01'
+) THEN
+  INSERT INTO zl_log_info2018_11 VALUES (NEW .*) ;
+ELSEIF (
+  NEW .time >= DATE '2018-12-01'  AND NEW .time < DATE '2019-01-01'
+) THEN
+  INSERT INTO zl_log_info2018_12 VALUES (NEW .*) ;
+ELSE
+   INSERT INTO zl_log_info_defult VALUES(NEW .*) ;
+END
+IF ; RETURN NULL ;
+END ; $$ LANGUAGE plpgsql;
+
+
+
+-- 创建触发器
+CREATE TRIGGER trigger_insert_zl_log_info_main BEFORE INSERT ON zl.zl_log_info_main
+FOR EACH ROW
+EXECUTE PROCEDURE fn_zl_log_info_main_insert_trigger();
+
+
+-- 
+drop TRIGGER trigger_insert_zl_log_info_main on zl_log_info_main
+DROP FUNCTION fn_zl_log_info_main_insert_trigger();
+
+-- 确保postgresql.conf 里的配置参数constraint_exclusion 是打开的。没有这个参数，查询不会按照需要进行优化。
+-- 这里我们需要做的是确保该选项在配置文件中没有被注释掉。
+--如果没有约束排除，查询会扫描tbl_partition 表中的每一个分区
+constraint_exclusion = on;       
