@@ -49,7 +49,7 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 		LOG.info("PGsqlSink start...");
 	}
 
-	public Status process() throws EventDeliveryException {
+	public Status process()throws EventDeliveryException  {
 		LOG.debug("processing...");
 		Status status = Status.READY;
 		Channel channel = getChannel();
@@ -93,17 +93,20 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 			counterGroup.incrementAndGet("transaction.success");
 		} catch (Throwable ex) {
 			try {
-				transaction.rollback();
+//				transaction.rollback();
 				counterGroup.incrementAndGet("transaction.rollback");
 			} catch (Exception ex2) {
 				LOG.error("Exception in rollback. Rollback might not have been successful.{}", ex2);
 			}
 			if (ex instanceof Error || ex instanceof RuntimeException) {
+//				transaction.commit();
 				LOG.error("Failed to commit transaction. Transaction rolled back.{}", ex);
 				Throwables.propagate(ex);
-			} if(ex instanceof java.sql.BatchUpdateException){
-				LOG.error("sql异常~妈蛋>>>{}", ex);
+			} else if (ex instanceof java.sql.BatchUpdateException||ex instanceof SQLException) {
+				transaction.commit();
+				LOG.error("sql异常~妈蛋"+ ex.getMessage());
 			} else {
+				transaction.rollback();
 				ex.printStackTrace();
 				LOG.error("Failed to commit transaction. Transaction rolled back.{}", ex);
 				LOG.error("getStackTrace={}", ex.getStackTrace());
