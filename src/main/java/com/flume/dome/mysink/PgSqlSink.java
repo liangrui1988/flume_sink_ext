@@ -93,7 +93,6 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 			counterGroup.incrementAndGet("transaction.success");
 		} catch (Throwable ex) {
 			try {
-				conn.rollback();
 				transaction.rollback();
 				counterGroup.incrementAndGet("transaction.rollback");
 			} catch (Exception ex2) {
@@ -102,8 +101,12 @@ public class PgSqlSink extends AbstractSink implements Configurable {
 			if (ex instanceof Error || ex instanceof RuntimeException) {
 				LOG.error("Failed to commit transaction. Transaction rolled back.{}", ex);
 				Throwables.propagate(ex);
+			} if(ex instanceof java.sql.BatchUpdateException){
+				LOG.error("sql异常~妈蛋>>>{}", ex);
 			} else {
+				ex.printStackTrace();
 				LOG.error("Failed to commit transaction. Transaction rolled back.{}", ex);
+				LOG.error("getStackTrace={}", ex.getStackTrace());
 				throw new EventDeliveryException("Failed to commit transaction. Transaction rolled back.", ex);
 			}
 		} finally {

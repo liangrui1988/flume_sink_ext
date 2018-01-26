@@ -5,7 +5,7 @@
 
 	<groupId>com.flume.dome</groupId>
 	<artifactId>flume_ext_sink</artifactId>
-	<version>0.0.45</version>
+	<version>0.0.46</version>
 	<!-- <packaging>jar</packaging> -->
 	<name>flume_ext_sink</name>
 	<url>http://maven.apache.org</url>
