@@ -81,7 +81,6 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 	@Override
 	public void configure(Context context) {
 		clientProps = new Properties();
-
 		hostname = context.getString("hostname");
 		port = context.getInteger("port");
 
