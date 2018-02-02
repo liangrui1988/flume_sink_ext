@@ -22,6 +22,7 @@ package com.flume.dome.mysink;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,8 +39,9 @@ import org.apache.flume.Transaction;
 import org.apache.flume.api.RpcClient;
 import org.apache.flume.api.RpcClientConfigurationConstants;
 import org.apache.flume.api.RpcClientFactory;
+import org.apache.flume.conf.Configurable;
 import org.apache.flume.instrumentation.SinkCounter;
-import org.apache.flume.sink.AbstractRpcSink;
+import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +56,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * 
  * @author ruiliang
  * @date 2018/01/31
+ * 
+ *       extends AbstractRpcSink
  */
-public class AvroSinkExt extends AbstractRpcSink {
+public class AvroSinkExt extends AbstractSink implements Configurable {
 
 	private static final Logger logger = LoggerFactory.getLogger(AvroSinkExt.class);
 	private String hostname;
@@ -69,7 +73,6 @@ public class AvroSinkExt extends AbstractRpcSink {
 	private final ScheduledExecutorService cxnResetExecutor = Executors.newSingleThreadScheduledExecutor(
 			new ThreadFactoryBuilder().setNameFormat("Rpc Sink Reset Thread").build());
 
-	@Override
 	protected RpcClient initializeRpcClient(Properties props) {
 		logger.info("Attempting to create Avro Rpc client.");
 		return RpcClientFactory.getInstance(props);
@@ -100,6 +103,19 @@ public class AvroSinkExt extends AbstractRpcSink {
 			logger.info("Connection reset is set to " + String.valueOf(DEFAULT_CXN_RESET_INTERVAL)
 					+ ". Will not reset connection to next hop");
 		}
+	}
+
+	public static void main(String[] args) {
+
+		if (StringUtils.isNumeric("xx")) {
+
+		}
+		System.out.println(StringUtils.isNumeric(null));
+		System.out.println(StringUtils.isNumeric(""));
+
+		System.out.println(StringUtils.isNumeric("10"));
+
+		System.out.println(Long.parseLong(""));
 	}
 
 	/**
@@ -137,12 +153,23 @@ public class AvroSinkExt extends AbstractRpcSink {
 				JSONObject root = new JSONObject();
 				root.put("who", "jyqy");
 				root.put("platform", "app");
+				// 时间ts
 				if (json_src.containsKey("ts")) {
-					root.put("when", json_src.get("ts"));
+					Object ts = json_src.get("ts");
+					// 如果为null "" 或中文 默认=0
+					if (StringUtils.isNumeric(ts.toString()) && !"".equals(ts.toString())) {
+						root.put("when", Long.parseLong(json_src.get("ts").toString()));
+					} else {
+						root.put("when", System.currentTimeMillis());
+					}
 					json_src.remove("ts");
+				} else {
+					root.put("when", System.currentTimeMillis());
 				}
+
+				// file
 				if (json_src.containsKey("file")) {
-					root.put("file", json_src.get("file"));
+					root.put("what", json_src.get("file"));
 					json_src.remove("file");
 				}
 
@@ -171,60 +198,147 @@ public class AvroSinkExt extends AbstractRpcSink {
 					json_src.remove("server_id");
 				}
 				// 怅号
+				Object account = 0;
 				if (json_src.containsKey("account")) {
-					player.put("account", json_src.get("account"));
+					account = json_src.get("account");
+					if (null == account || "".equals(account.toString())) {// 空默认0
+						account = 0;
+					} else if (StringUtils.isNumeric(account.toString())) {// 转数字
+						account = Long.parseLong(account.toString());
+					}
+					// 移除
 					json_src.remove("account");
 				}
+				// 加入
+				player.put("account", account);
+
 				// 渠道id
 				if (json_src.containsKey("chn")) {
 					player.put("cid", json_src.get("chn"));
 					json_src.remove("chn");
 				}
 				// 渠道怅号id
+				Object chn_id = 0;
 				if (json_src.containsKey("chn_id")) {
-					player.put("cuser", json_src.get("chn_id"));
+					chn_id = json_src.get("chn_id");
+					if (null == chn_id || "".equals(chn_id.toString())) {// 空默认0
+						chn_id = 0;
+					} else if (StringUtils.isNumeric(chn_id.toString())) {// 转数字
+						chn_id = Long.parseLong(chn_id.toString());
+					}
+					// 移除
 					json_src.remove("chn_id");
 				}
+				// 加入
+				player.put("cuser", chn_id);
+
 				// 是否支付
-				if (json_src.containsKey("pay")) {
-					player.put("pay", json_src.get("pay"));
-					json_src.remove("pay");
+				if (json_src.containsKey("is_pay")) {
+					Object pay = json_src.get("is_pay");
+					if (StringUtils.isNumeric(pay.toString()) && !"".equals(pay.toString())) {
+						player.put("pay", Long.parseLong(pay.toString()));
+					} else {
+						player.put("pay", 0);
+					}
+					json_src.remove("is_pay");
+				} else {
+					player.put("pay", 0);
 				}
 				// 职业
-				if (json_src.containsKey("career")) {
-					player.put("career", json_src.get("career"));
-					json_src.remove("career");
-				}
-				
-				//角色id
-				if (json_src.containsKey("rid")) {
-					player.put("rid", json_src.get("rid"));
+				if (json_src.containsKey("rid") && null != json_src.get("rid")
+						&& !"".equals(json_src.get("rid").toString())) {
+					Object rid = json_src.get("rid");
+					if (StringUtils.isNumeric(rid.toString())) {
+						player.put("career", Long.parseLong(rid.toString()));
+					} else {
+						player.put("career", rid);
+					}
 					json_src.remove("rid");
+				} else {
+					player.put("career", 0);
 				}
+
+				// 角色id
+				Object role_id = 0;
+				if (json_src.containsKey("role_id")) {
+					role_id = json_src.get("role_id");
+					// 转数字
+					if (null != role_id && !"".equals(role_id.toString())
+							&& StringUtils.isNumeric(role_id.toString())) {
+						role_id = Long.parseLong(role_id.toString());
+					}
+					// 移除
+					json_src.remove("role_id");
+				}
+				// 加入
+				player.put("rid", role_id);
+
+				// 角色名
 				if (json_src.containsKey("role_name")) {
 					player.put("rname", json_src.get("role_name"));
 					json_src.remove("role_name");
 				}
 				// 等级
 				if (json_src.containsKey("lv")) {
-					player.put("lv", json_src.get("lv"));
+					Object lv = json_src.get("lv");
+					if (StringUtils.isNumeric(lv.toString()) && !"".equals(lv.toString())) {
+						player.put("lv", Long.parseLong(lv.toString()));
+					} else {
+						player.put("lv", 0);
+					}
 					json_src.remove("lv");
+				} else {
+					player.put("lv", 0);
 				}
+
 				// 战力
+				Object power = 0;
 				if (json_src.containsKey("power")) {
-					player.put("power", json_src.get("power"));
+					power = json_src.get("power");
+					if (null == power || "".equals(power.toString())) {// 空默认0
+						power = 0;
+					} else if (StringUtils.isNumeric(power.toString())) {// 转数字
+						power = Long.parseLong(power.toString());
+					}
+					// 移除
 					json_src.remove("power");
 				}
-				
+				player.put("power", power);
+
+				// vip
+				Object vip = 0;
 				if (json_src.containsKey("vip")) {
-					player.put("vip", json_src.get("vip"));
+					vip = json_src.get("vip");
+					if (null == vip || "".equals(vip.toString())) {// 空默认0
+						vip = 0;
+					} else if (StringUtils.isNumeric(vip.toString())) {// 转数字
+						vip = Long.parseLong(vip.toString());
+					}
+					// 移除
 					json_src.remove("vip");
 				}
-				//移除时间字段
+				player.put("vip", vip);
+
+				// 移除时间字段
 				if (json_src.containsKey("time")) {
 					json_src.remove("time");
 				}
-				
+				// 把字段里面的value 数字转数字
+				Set<String> key = json_src.keySet();
+				for (String _k : key) {
+					Object _v = json_src.get(_k);
+					if (_v == null) {
+						json_src.put(_k, "");
+						continue;
+					}
+					if ("".equals(_v)) {
+						continue;
+					}
+					// 如果是数字，转long
+					if (StringUtils.isNumeric(_v.toString())) {
+						json_src.put(_k, Long.parseLong(_v.toString()));
+					}
+				}
 				// context
 				JSONObject context = new JSONObject();
 				context.put("player", player);// 共性节点数据
