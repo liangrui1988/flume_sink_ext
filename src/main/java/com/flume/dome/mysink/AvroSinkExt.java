@@ -153,18 +153,21 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 				root.put("who", "jyqy");
 				root.put("platform", "app");
 				// 时间ts
-				if (json_src.containsKey("ts")) {
-					Object ts = json_src.get("ts");
-					// 如果为null "" 或中文 默认=0
-					if (StringUtils.isNumeric(ts.toString()) && !"".equals(ts.toString())) {
-						root.put("when", Long.parseLong(json_src.get("ts").toString()));
-					} else {
-						root.put("when", System.currentTimeMillis());
-					}
-					json_src.remove("ts");
-				} else {
-					root.put("when", System.currentTimeMillis());
-				}
+				// if (json_src.containsKey("ts")) {
+				// Object ts = json_src.get("ts");
+				// // 如果为null "" 或中文 默认=0
+				// if (StringUtils.isNumeric(ts.toString()) &&
+				// !"".equals(ts.toString())) {
+				// root.put("when",
+				// Long.parseLong(json_src.get("ts").toString()));
+				// } else {
+				// root.put("when", System.currentTimeMillis());
+				// }
+				// json_src.remove("ts");
+				// } else {
+				// root.put("when", System.currentTimeMillis());
+				// }
+				root.put("when", System.currentTimeMillis());
 
 				// file
 				if (json_src.containsKey("file")) {
@@ -224,6 +227,8 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 						chn_id = 0;
 					} else if (StringUtils.isNumeric(chn_id.toString())) {// 转数字
 						chn_id = Long.parseLong(chn_id.toString());
+					}else{//如果非数字，默认=0吧
+						chn_id=0;
 					}
 					// 移除
 					json_src.remove("chn_id");
@@ -331,6 +336,16 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 						continue;
 					}
 					if ("".equals(_v)) {
+						continue;
+					}
+					// 时间转换
+					if ("ts".equals(_k)) {
+						if (StringUtils.isNumeric(_v.toString())) {
+							json_src.put("time", Long.parseLong(_v.toString()));
+						} else {
+							json_src.put("time", 0);
+						}
+						json_src.remove("ts");
 						continue;
 					}
 					// 如果是数字，转long
