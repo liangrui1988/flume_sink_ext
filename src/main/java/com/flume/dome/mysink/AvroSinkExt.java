@@ -207,6 +207,8 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 						account = 0;
 					} else if (StringUtils.isNumeric(account.toString())) {// 转数字
 						account = Long.parseLong(account.toString());
+					}else{
+						account=0;
 					}
 					// 移除
 					json_src.remove("account");
@@ -359,6 +361,7 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 				context.put("data", json_src);// 剩下的就是日志数据
 				root.put("context", context);
 				// 加入event
+				logger.debug("send content...{}", root.toString());
 				event.setBody(root.toString().getBytes("utf-8"));
 				batch.add(event);
 			}
