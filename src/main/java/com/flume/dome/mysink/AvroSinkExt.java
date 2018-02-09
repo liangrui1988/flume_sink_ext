@@ -106,15 +106,17 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 
 	public static void main(String[] args) {
 
-		if (StringUtils.isNumeric("xx")) {
+		String s="25740.0";
+		System.out.println(s); 
+		System.out.println(StringUtils.isNumeric(s));
+		System.out.println(StringUtils.isNumericSpace(s));
 
-		}
-		System.out.println(StringUtils.isNumeric(null));
-		System.out.println(StringUtils.isNumeric(""));
-
-		System.out.println(StringUtils.isNumeric("10"));
-
-		System.out.println(Long.parseLong(""));
+//		System.out.println(StringUtils.isNumeric(null));
+//		System.out.println(StringUtils.isNumeric(""));
+//
+//		System.out.println(StringUtils.isNumeric("10"));
+//
+//		System.out.println(Long.parseLong(""));
 	}
 
 	/**
@@ -338,6 +340,10 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 						continue;
 					}
 					if ("".equals(_v)) {
+						continue;
+					}
+					//action不需转
+					if ("action".equals(_k)) {
 						continue;
 					}
 					// 时间转换
