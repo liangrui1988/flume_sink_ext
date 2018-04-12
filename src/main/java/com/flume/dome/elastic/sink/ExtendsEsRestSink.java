@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dianping.cat.Cat;
 import com.flume.dome.elastic.client.EsRestClientExt;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -159,7 +158,7 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 	}
 
 	public Status process() throws EventDeliveryException {
-		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume");
+//		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume");
 		logger.debug("processing...");
 		Status status = Status.READY;
 		Channel channel = getChannel();
@@ -198,9 +197,9 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 					}
 				}
 				// cat监控记录一事件
-				Cat.logEvent("Exec.LOG.Flume", sid.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + sid);
+//				Cat.logEvent("Exec.LOG.Flume", sid.toString(), com.dianping.cat.message.Event.SUCCESS, "sid=" + sid);
 				//一条日志
-				Cat.logMetricForCount("flume-log");
+//				Cat.logMetricForCount("flume-log");
 				// 转字符串
 				StringBuffer sb = new StringBuffer();
 				for (JSONObject jobj : actions) {
@@ -238,12 +237,12 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 			counterGroup.incrementAndGet("transaction.success");
 			
 			//批量提交了多少
-			Cat.logMetricForSum("batchSizeCount", count);
+//			Cat.logMetricForSum("batchSizeCount", count);
 			// 监控提交状态
-			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
+//			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
 		} catch (Throwable ex) {
 			// 监控提交状态
-			t.setStatus(ex);
+//			t.setStatus(ex);
 			try {
 				txn.rollback();
 				counterGroup.incrementAndGet("transaction.rollback");
@@ -259,7 +258,7 @@ public class ExtendsEsRestSink extends AbstractSink implements Configurable {
 				throw new EventDeliveryException("Failed to commit transaction. Transaction rolled back.", ex);
 			}
 		} finally {
-			t.complete();// 监控提交状态
+//			t.complete();// 监控提交状态
 			txn.close();
 			client.close();
 		}

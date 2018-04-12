@@ -19,6 +19,8 @@
 
 package com.flume.dome.mysink;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -333,7 +335,15 @@ public class AvroSinkExt extends AbstractSink implements Configurable {
 				}
 				// 把字段里面的value 数字转数字
 				Set<String> key = json_src.keySet();
-				for (String _k : key) {
+				//引用转不引用，不然有并发异常
+				Iterator it = key.iterator();
+				Set<String> key_clone = new HashSet<>();
+				while (it.hasNext()) {
+					String _k = it.next().toString();
+					key_clone.add(_k);
+				}
+				//
+				for (String _k : key_clone) {
 					Object _v = json_src.get(_k);
 					if (_v == null) {
 						json_src.put(_k, "");

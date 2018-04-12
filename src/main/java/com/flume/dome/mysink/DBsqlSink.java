@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dianping.cat.Cat;
 import com.flume.dome.xutils.ConverData;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -54,10 +53,10 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 	public Status process() throws EventDeliveryException {
 		LOG.debug("processing...");
 		Status status = Status.READY;
-		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume-" + serverId);
+//		com.dianping.cat.message.Transaction t = Cat.newTransaction("Exec", "flume-" + serverId);
 		// cat监控记录一事件
-		Cat.logEvent("Exec.event-" + serverId, serverId.toString(), com.dianping.cat.message.Event.SUCCESS,
-				"sid=" + serverId);
+//		Cat.logEvent("Exec.event-" + serverId, serverId.toString(), com.dianping.cat.message.Event.SUCCESS,
+//				"sid=" + serverId);
 		Channel channel = getChannel();
 		Transaction transaction = channel.getTransaction();
 		Event event;
@@ -71,10 +70,10 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 				// for (int i = 0; i < batchSize; i++) {
 				event = channel.take();// 从通道中获取数据
 				// 一条日志
-				Cat.logMetricForCount("flume-db-log-take");
+//				Cat.logMetricForCount("flume-db-log-take");
 				if (event == null) {
 					// 没记录的数据
-					Cat.logMetricForCount("flume-db-log-event-null");
+//					Cat.logMetricForCount("flume-db-log-event-null");
 					break;
 				}
 				content = new String(event.getBody());
@@ -116,7 +115,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 					Log.info("log inserint json:{}", json.toString());
 					if (StringUtils.isBlank(json.toJSONString()) || "{}".equals(json.toString())) {
 						// 没记录的数据
-						Cat.logMetricForCount("flume-db-log-jsos-{}");
+//						Cat.logMetricForCount("flume-db-log-jsos-{}");
 						continue;
 					}
 					// 如果是属性，则插入另一张表
@@ -171,13 +170,13 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			sinkCounter.addToEventDrainSuccessCount(count);
 			counterGroup.incrementAndGet("transaction.success");
 			// 实际批量提交了多少
-			Cat.logMetricForSum("flume-db-commit_count", count);
+//			Cat.logMetricForSum("flume-db-commit_count", count);
 			// 监控提交状态
-			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
+//			t.setStatus(com.dianping.cat.message.Transaction.SUCCESS);
 
 		} catch (Throwable ex) {
 			// 监控提交状态
-			t.setStatus(ex);
+//			t.setStatus(ex);
 			try {
 				transaction.rollback();
 				counterGroup.incrementAndGet("transaction.rollback");
@@ -194,7 +193,7 @@ public class DBsqlSink extends AbstractSink implements Configurable {
 			}
 
 		} finally {
-			t.complete();// 监控提交状态
+//			t.complete();// 监控提交状态
 			transaction.close();
 			// conn.close();
 		}
